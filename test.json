@@ -1,0 +1,72 @@
+{
+    "group": {
+        "id": 0,
+        "name": "Trip Split Group",
+        "owner": 123,
+        "members": [],
+        "expenses": [
+            {
+                "id": 101,
+                "description": "Dinner bill",
+                "amount": 50.0,
+                "payer": {
+                    "id": 0,
+                    "name": "Owner Name",
+                    "email": "owner@example.com",
+                    "password": "securepassword"
+                },
+                "participants": [
+                    {
+                        "id": 0,
+                        "name": "New Member",
+                        "email": "newmember@example.com",
+                        "password": "securepassword"
+                    }
+                ],
+                "date": "2024-02-01"
+            }
+        ]
+    },
+    "total_spent": 50.0,
+    "expenses": [
+        {
+            "id": 101,
+            "description": "Dinner bill",
+            "amount": 50.0,
+            "payer": {
+                "id": 0,
+                "name": "Owner Name",
+                "email": "owner@example.com",
+                "password": "securepassword"
+            },
+            "participants": [
+                {
+                    "id": 0,
+                    "name": "New Member",
+                    "email": "newmember@example.com",
+                    "password": "securepassword"
+                }
+            ],
+            "date": "2024-02-01"
+        }
+    ],
+    "transactions": [
+        {
+            "id": 1,
+            "payer": {
+                "id": 0,
+                "name": "Owner Name",
+                "email": "owner@example.com",
+                "password": "securepassword"
+            },
+            "receiver": {
+                "id": 0,
+                "name": "New Member",
+                "email": "newmember@example.com",
+                "password": "securepassword"
+            },
+            "amount": 50.0,
+            "date": "2024-02-01"
+        }
+    ]
+}
