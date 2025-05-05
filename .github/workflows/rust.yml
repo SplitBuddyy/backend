@@ -55,4 +55,4 @@ jobs:
           toolchain: stable
           override: true
       - name: Run clippy
-        run: cargo clippy --all --release
+        run: cargo clippy --all --release -- -D warnings
