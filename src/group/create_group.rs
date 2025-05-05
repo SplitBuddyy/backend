@@ -12,7 +12,7 @@ pub async fn root(State(app_state): State<AppState>, Json(group): Json<Group>) -
     {
         return Response::new("Group already exists".to_string());
     }
-    let id = if app_state.groups.lock().await.len() == 0 {
+    let id = if app_state.groups.lock().await.is_empty() {
         0
     } else {
         app_state.groups.lock().await.last().unwrap().id + 1

@@ -1,5 +1,5 @@
-use trip_split::models::group::Group;
 use trip_split::models::expenses::Expense;
+use trip_split::models::group::Group;
 use trip_split::models::user::User;
 
 fn sample_user(id: i32, name: &str) -> User {
@@ -51,5 +51,8 @@ fn integration_group_flow() {
     let lunch_share = 60.0 / 3.0;
     let drinks_share = 30.0 / 2.0;
     assert!(summary.transactions.iter().any(|t| t.amount == lunch_share));
-    assert!(summary.transactions.iter().any(|t| t.amount == drinks_share));
-} 
+    assert!(summary
+        .transactions
+        .iter()
+        .any(|t| t.amount == drinks_share));
+}

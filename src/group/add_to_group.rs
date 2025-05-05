@@ -13,7 +13,7 @@ pub async fn root(
         .find(|g| g.owner == payload.group_info.owner && g.id == payload.group_info.group_id)
     {
         group.add_members(payload.member);
-        return Ok(Json(true));
+        Ok(Json(true))
     } else {
         Err((
             StatusCode::NOT_FOUND,

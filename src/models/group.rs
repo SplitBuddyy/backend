@@ -61,13 +61,13 @@ impl Group {
             expenses: Vec::new(),
         }
     }
-    pub fn add_members(self: &mut Self, member: User) {
+    pub fn add_members(&mut self, member: User) {
         self.members.push(member);
     }
-    pub fn add_expense(self: &mut Self, expense: Expense) {
+    pub fn add_expense(&mut self, expense: Expense) {
         self.expenses.push(expense);
     }
-    pub fn get_group_summary(self: &Self) -> GroupSummary {
+    pub fn get_group_summary(&mut self) -> GroupSummary {
         let mut total_spent = 0.0;
         let mut transactions: Vec<Transaction> = Vec::new();
         for expense in &self.expenses {
