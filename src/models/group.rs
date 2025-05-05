@@ -97,3 +97,91 @@ impl fmt::Display for Group {
         write!(f, "Group: {}\nMembers: {:?}", self.name, self.members)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::models::user::User;
+    use crate::models::expenses::{Expense, Transaction};
+
+    fn sample_user(id: i32, name: &str) -> User {
+        User::new(id, name, &format!("{}@example.com", name), "pass")
+    }
+
+    #[test]
+    fn test_group_new() {
+        let group = Group::new(1, "Trip", 42);
+        assert_eq!(group.id, 1);
+        assert_eq!(group.name, "Trip");
+        assert_eq!(group.owner, 42);
+        assert!(group.members.is_empty());
+        assert!(group.expenses.is_empty());
+    }
+
+    #[test]
+    fn test_add_members() {
+        let mut group = Group::new(2, "Party", 7);
+        let user = sample_user(1, "Alice");
+        group.add_members(user.clone());
+        assert_eq!(group.members.len(), 1);
+        assert_eq!(group.members[0].name, "Alice");
+    }
+
+    #[test]
+    fn test_add_expense() {
+        let mut group = Group::new(3, "Dinner", 8);
+        let user = sample_user(2, "Bob");
+        let expense = Expense {
+            id: 1,
+            description: Some("Pizza".to_string()),
+            amount: 30.0,
+            payer: user.clone(),
+            participants: vec![user.clone()],
+            date: "2024-01-01".to_string(),
+        };
+        group.add_expense(expense.clone());
+        assert_eq!(group.expenses.len(), 1);
+        assert_eq!(group.expenses[0].amount, 30.0);
+    }
+
+    #[test]
+    fn test_group_summary() {
+        let mut group = Group::new(4, "Lunch", 9);
+        let user = sample_user(3, "Carol");
+        let expense = Expense {
+            id: 2,
+            description: Some("Sandwiches".to_string()),
+            amount: 20.0,
+            payer: user.clone(),
+            participants: vec![user.clone()],
+            date: "2024-01-02".to_string(),
+        };
+        group.add_expense(expense.clone());
+        let summary = group.get_group_summary();
+        assert_eq!(summary.total_spent, 20.0);
+        assert_eq!(summary.expenses.len(), 1);
+        assert_eq!(summary.transactions.len(), 1);
+        assert_eq!(summary.transactions[0].amount, 20.0);
+    }
+
+    #[test]
+    fn test_group_display() {
+        let group = Group::new(5, "TestGroup", 10);
+        let display = format!("{}", group);
+        assert!(display.contains("Group: TestGroup"));
+    }
+
+    #[test]
+    fn test_group_summary_display() {
+        let group = Group::new(6, "SumGroup", 11);
+        let summary = GroupSummary {
+            group,
+            total_spent: 100.0,
+            expenses: vec![],
+            transactions: vec![],
+        };
+        let display = format!("{}", summary);
+        assert!(display.contains("Group: SumGroup"));
+        assert!(display.contains("Total Spent: 100"));
+    }
+}
