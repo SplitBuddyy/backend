@@ -22,7 +22,7 @@ pub async fn start() {
         groups: Arc::new(Mutex::new(Vec::new())),
     };
     let cors = CorsLayer::permissive();
-   
+
     let app = Router::new()
         .route("/", get(ok_handler))
         .fallback(|| async { "There is nothing here" })

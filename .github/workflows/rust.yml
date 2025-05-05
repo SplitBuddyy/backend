@@ -23,9 +23,29 @@ jobs:
         with:
           toolchain: stable
           override: true
-      - name: Check formatting
-        run: cargo fmt --all -- --check
-      - name: Build
-        run: cargo build --all --release
       - name: Run tests
         run: cargo test --all --verbose 
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Build
+        run: cargo build --all --release

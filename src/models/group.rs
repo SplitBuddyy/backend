@@ -24,17 +24,17 @@ pub struct GroupRequest {
     pub group_id: u32,
 }
 #[derive(Deserialize)]
-pub struct ExpenseAddRequest{
+pub struct ExpenseAddRequest {
     pub group_info: GroupRequest,
-    pub expense: Expense
+    pub expense: Expense,
 }
 #[derive(Deserialize)]
-pub struct AddMemberRequest{
+pub struct AddMemberRequest {
     pub group_info: GroupRequest,
-    pub member: User
+    pub member: User,
 }
 
-#[derive(Debug, Clone,Serialize,Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GroupSummary {
     pub group: Group,
     pub total_spent: f64,
@@ -52,16 +52,16 @@ impl fmt::Display for GroupSummary {
 }
 
 impl Group {
-    pub fn new(id: u32, name: &str,owner:u32) -> Self {
+    pub fn new(id: u32, name: &str, owner: u32) -> Self {
         Self {
             id,
             owner,
             name: name.to_string(),
-            members:Vec::new(),
+            members: Vec::new(),
             expenses: Vec::new(),
         }
     }
-    pub fn add_members(self: &mut Self,member: User){
+    pub fn add_members(self: &mut Self, member: User) {
         self.members.push(member);
     }
     pub fn add_expense(self: &mut Self, expense: Expense) {
@@ -101,8 +101,8 @@ impl fmt::Display for Group {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::user::User;
     use crate::models::expenses::{Expense, Transaction};
+    use crate::models::user::User;
 
     fn sample_user(id: i32, name: &str) -> User {
         User::new(id, name, &format!("{}@example.com", name), "pass")
