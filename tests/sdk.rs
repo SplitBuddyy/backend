@@ -1,32 +1,6 @@
 use reqwest::Client;
-use serde::{Deserialize, Serialize};
 use serde_json;
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Group {
-    pub id: u32,
-    pub name: String,
-    pub owner: u32,
-    pub members: Vec<User>,
-    pub expenses: Vec<Expense>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct User {
-    pub id: i32,
-    pub name: String,
-    pub email: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Expense {
-    pub id: i32,
-    pub description: Option<String>,
-    pub amount: f64,
-    pub payer: User,
-    pub participants: Vec<User>,
-    pub date: String,
-}
+use trip_split::models::group::Group;
 
 pub struct Sdk {
     client: Client,
