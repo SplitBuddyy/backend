@@ -11,3 +11,6 @@ serde_json = "1.0"
 tower-http={version = "0.6.2", features = ["cors"]}
 utoipa = "5.3.1"
 utoipa-swagger-ui = "9.0.0"
+
+[dev-dependencies]
+reqwest = { version = "0.12", features = ["json"] }
