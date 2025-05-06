@@ -27,7 +27,7 @@ pub async fn create_user(
     if user.password.len() < 8 {
         return Response::new("Password must be at least 8 characters".to_string());
     }
-    let id = if app_state.users.lock().await.len() == 0 {
+    let id = if app_state.users.lock().await.is_empty() {
         0
     } else {
         app_state.users.lock().await.last().unwrap().id + 1
