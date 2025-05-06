@@ -101,7 +101,7 @@ impl fmt::Display for Group {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::expenses::{Expense, Transaction};
+    use crate::models::expenses::Expense;
     use crate::models::user::User;
 
     fn sample_user(id: i32, name: &str) -> User {

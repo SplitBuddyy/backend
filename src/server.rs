@@ -16,20 +16,24 @@ pub struct AppState {
     pub users: Arc<Mutex<Vec<User>>>,
     pub groups: Arc<Mutex<Vec<Group>>>,
 }
-pub async fn start() {
+
+pub fn app() -> Router {
     let app_state = AppState {
         users: Arc::new(Mutex::new(Vec::new())),
         groups: Arc::new(Mutex::new(Vec::new())),
     };
     let cors = CorsLayer::permissive();
 
-    let app = Router::new()
+    Router::new()
         .route("/", get(ok_handler))
         .fallback(|| async { "There is nothing here" })
         .nest("/user", user::router(app_state.clone()))
         .nest("/group", group::router(app_state.clone()))
-        .layer(cors);
+        .layer(cors)
+}
 
+pub async fn start() {
+    let app = app();
     let addr: SocketAddr = format!("{}:{}", "0.0.0.0", 3000).parse().unwrap();
 
     println!("Listening on http://{}", addr);

@@ -1,5 +1,6 @@
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use serde_json;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Group {
@@ -40,22 +41,30 @@ impl Sdk {
         }
     }
 
-    pub async fn create_group(&self, name: &str, owner: u32) -> reqwest::Result<Group> {
+    pub async fn create_group(&self, name: &str, owner: u32) -> reqwest::Result<String> {
+        let group = Group {
+            id: 0,
+            name: name.to_string(),
+            owner,
+            members: vec![],
+            expenses: vec![],
+        };
         let resp = self
             .client
-            .post(&format!("{}/groups", self.base_url))
-            .json(&serde_json::json!({"name": name, "owner": owner}))
+            .post(&format!("{}/group/create_group", self.base_url))
+            .json(&group)
             .send()
             .await?;
-        resp.json::<Group>().await
+        resp.text().await
     }
 
-    pub async fn get_group(&self, group_id: u32) -> reqwest::Result<Group> {
+    pub async fn get_groups(&self, owner: u32) -> reqwest::Result<Vec<Group>> {
         let resp = self
             .client
-            .get(&format!("{}/groups/{}", self.base_url, group_id))
+            .post(&format!("{}/group/get_groups", self.base_url))
+            .json(&serde_json::json!({"owner": owner}))
             .send()
             .await?;
-        resp.json::<Group>().await
+        resp.json::<Vec<Group>>().await
     }
 }
