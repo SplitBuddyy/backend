@@ -1,4 +1,9 @@
+pub mod group;
+pub mod models;
+pub mod server;
+pub mod user;
+
 #[tokio::main]
 async fn main() {
-    trip_split::server::start().await;
+    server::start().await;
 }

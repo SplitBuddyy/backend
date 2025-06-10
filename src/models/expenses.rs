@@ -1,8 +1,9 @@
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 use crate::models::user::User;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct Transaction {
     pub id: i32,
     pub payer: User,
@@ -10,7 +11,7 @@ pub struct Transaction {
     pub amount: f64,
     pub date: String,
 }
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct Expense {
     pub id: i32,
     pub description: Option<String>,

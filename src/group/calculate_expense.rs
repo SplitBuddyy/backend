@@ -5,7 +5,15 @@ use crate::{
     server::AppState,
 };
 
-pub async fn root(
+#[utoipa::path(
+    post,
+    path = "/calculate",
+    request_body = GroupRequest,
+    responses(
+        (status = 200, description = "Expense calculated successfully", body = GroupSummary)
+    )
+)]
+pub async fn calculate_expense(
     State(app_state): State<AppState>,
     Json(payload): Json<GroupRequest>,
 ) -> Result<Json<GroupSummary>, (StatusCode, String)> {
