@@ -32,11 +32,12 @@ pub struct AppState {
 )]
 struct ApiDoc;
 
-pub async fn start() {
+pub fn app() -> Router {
     let app_state = AppState {
         users: Arc::new(Mutex::new(Vec::new())),
         groups: Arc::new(Mutex::new(Vec::new())),
     };
+
     let cors = CorsLayer::permissive();
     let mut doc = ApiDoc::openapi();
     doc.info = Info::builder().title("Trip Split").version("0.1.0").build();
@@ -48,13 +49,15 @@ pub async fn start() {
         .route("/ok", get(ok_handler))
         .fallback(ok_handler)
         .layer(cors);
-
+    app
+}
+pub async fn start() {
     let addr: SocketAddr = format!("{}:{}", "0.0.0.0", 3000).parse().unwrap();
 
     println!("Listening on http://{}", addr);
     let listener = TcpListener::bind(addr).await.unwrap();
 
-    serve(listener, app).await.unwrap();
+    serve(listener, app()).await.unwrap();
 }
 
 #[utoipa::path(

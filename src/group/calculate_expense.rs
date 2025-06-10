@@ -18,7 +18,7 @@ pub async fn calculate_expense(
     Json(payload): Json<GroupRequest>,
 ) -> Result<Json<GroupSummary>, (StatusCode, String)> {
     let groups = app_state.groups.lock().await.clone();
-    if let Some(group) = groups
+    if let Some(mut group) = groups
         .iter()
         .find(|g| g.owner == payload.owner && g.id == payload.group_id)
         .cloned()
