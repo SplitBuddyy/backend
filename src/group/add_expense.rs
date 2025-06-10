@@ -21,7 +21,7 @@ pub async fn add_expense(
         .find(|g| g.owner == payload.group_info.owner && g.id == payload.group_info.group_id)
     {
         group.add_expense(payload.expense);
-        return Ok(Json(true));
+        Ok(Json(true))
     } else {
         Err((
             StatusCode::NOT_FOUND,

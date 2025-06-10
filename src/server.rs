@@ -42,15 +42,15 @@ pub fn app() -> Router {
     let mut doc = ApiDoc::openapi();
     doc.info = Info::builder().title("Trip Split").version("0.1.0").build();
 
-    let app = Router::new()
+    Router::new()
         .merge(SwaggerUi::new("/swagger-ui").url("/api/openapi.json", doc))
         .nest("/group", group::router(app_state.clone()))
         .nest("/user", user::router(app_state.clone()))
         .route("/ok", get(ok_handler))
         .fallback(ok_handler)
-        .layer(cors);
-    app
+        .layer(cors)
 }
+
 pub async fn start() {
     let addr: SocketAddr = format!("{}:{}", "0.0.0.0", 3000).parse().unwrap();
 

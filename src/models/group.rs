@@ -62,7 +62,7 @@ impl Group {
             expenses: Vec::new(),
         }
     }
-    pub fn add_members(self: &mut Self, member: User) {
+    pub fn add_members(&mut self, member: User) {
         self.members.push(member);
     }
     pub fn add_expense(&mut self, expense: Expense) {
