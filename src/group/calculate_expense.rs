@@ -5,12 +5,20 @@ use crate::{
     server::AppState,
 };
 
-pub async fn root(
+#[utoipa::path(
+    post,
+    path = "/calculate",
+    request_body = GroupRequest,
+    responses(
+        (status = 200, description = "Expense calculated successfully", body = GroupSummary)
+    )
+)]
+pub async fn calculate_expense(
     State(app_state): State<AppState>,
     Json(payload): Json<GroupRequest>,
 ) -> Result<Json<GroupSummary>, (StatusCode, String)> {
     let groups = app_state.groups.lock().await.clone();
-    if let Some(mut group) = groups
+    if let Some(group) = groups
         .iter()
         .find(|g| g.owner == payload.owner && g.id == payload.group_id)
         .cloned()

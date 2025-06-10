@@ -2,7 +2,18 @@ use axum::{extract::State, response::Response, Json};
 
 use crate::{models::group::Group, server::AppState};
 
-pub async fn root(State(app_state): State<AppState>, Json(group): Json<Group>) -> Response<String> {
+#[utoipa::path(
+    post,
+    path = "/create_group",
+    request_body = Group,
+    responses(
+        (status = 200, description = "Group created successfully", body = String)
+    )
+)]
+pub async fn create_group(
+    State(app_state): State<AppState>,
+    Json(group): Json<Group>,
+) -> Response<String> {
     if app_state
         .groups
         .lock()

@@ -2,7 +2,15 @@ use axum::{extract::State, http::StatusCode, Json};
 
 use crate::{models::group::ExpenseAddRequest, server::AppState};
 
-pub async fn root(
+#[utoipa::path(
+    post,
+    path = "/add_expense",
+    request_body = ExpenseAddRequest,
+    responses(
+        (status = 200, description = "Expense added to group successfully", body = bool)
+    )
+)]
+pub async fn add_expense(
     State(app_state): State<AppState>,
     Json(payload): Json<ExpenseAddRequest>,
 ) -> Result<Json<bool>, (StatusCode, String)> {
@@ -13,7 +21,7 @@ pub async fn root(
         .find(|g| g.owner == payload.group_info.owner && g.id == payload.group_info.group_id)
     {
         group.add_expense(payload.expense);
-        Ok(Json(true))
+        return Ok(Json(true));
     } else {
         Err((
             StatusCode::NOT_FOUND,

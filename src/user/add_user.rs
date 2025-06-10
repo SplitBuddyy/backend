@@ -2,6 +2,14 @@ use axum::{extract::State, response::Response, Json};
 
 use crate::{models::user::User, server::AppState};
 
+#[utoipa::path(
+    post,
+    path = "/create_user",
+    request_body = User,
+    responses(
+        (status = 200, description = "User created successfully", body = String)
+    )
+)]
 pub async fn create_user(
     State(app_state): State<AppState>,
     Json(user): Json<User>,

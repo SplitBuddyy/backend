@@ -1,13 +1,14 @@
 use core::fmt;
 
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 use crate::models::{
     expenses::{Expense, Transaction},
     user::User,
 };
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct Group {
     #[serde(skip_deserializing)]
     pub id: u32,
@@ -18,23 +19,23 @@ pub struct Group {
     #[serde(skip_deserializing)]
     pub expenses: Vec<Expense>,
 }
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 pub struct GroupRequest {
     pub owner: u32,
     pub group_id: u32,
 }
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 pub struct ExpenseAddRequest {
     pub group_info: GroupRequest,
     pub expense: Expense,
 }
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 pub struct AddMemberRequest {
     pub group_info: GroupRequest,
     pub member: User,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct GroupSummary {
     pub group: Group,
     pub total_spent: f64,
@@ -61,7 +62,7 @@ impl Group {
             expenses: Vec::new(),
         }
     }
-    pub fn add_members(&mut self, member: User) {
+    pub fn add_members(self: &mut Self, member: User) {
         self.members.push(member);
     }
     pub fn add_expense(&mut self, expense: Expense) {

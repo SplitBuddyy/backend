@@ -3,7 +3,7 @@ RUN rustup install 1.81.0
 RUN rustup component add cargo clippy rust-docs rust-std rustc rustfmt
 
 # Use apk for package management in Alpine
-RUN apk add --no-cache build-base libressl-dev
+RUN apk add --no-cache build-base libressl-dev curl
 RUN cargo install cargo-chef
 
 FROM chef AS planner

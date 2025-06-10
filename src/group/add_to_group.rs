@@ -2,7 +2,15 @@ use axum::{extract::State, http::StatusCode, Json};
 
 use crate::{models::group::AddMemberRequest, server::AppState};
 
-pub async fn root(
+#[utoipa::path(
+    post,
+    path = "/add_to_group",
+    request_body = AddMemberRequest,
+    responses(
+        (status = 200, description = "User added to group successfully", body = bool)
+    )
+)]
+pub async fn add_to_group(
     State(app_state): State<AppState>,
     Json(payload): Json<AddMemberRequest>,
 ) -> Result<Json<bool>, (StatusCode, String)> {
@@ -13,7 +21,7 @@ pub async fn root(
         .find(|g| g.owner == payload.group_info.owner && g.id == payload.group_info.group_id)
     {
         group.add_members(payload.member);
-        Ok(Json(true))
+        return Ok(Json(true));
     } else {
         Err((
             StatusCode::NOT_FOUND,

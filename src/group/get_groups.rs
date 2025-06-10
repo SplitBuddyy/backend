@@ -1,14 +1,23 @@
 use axum::{extract::State, Json};
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 use crate::{models::group::Group, server::AppState};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, ToSchema)]
 pub struct GetGroupRequest {
     pub owner: u32,
 }
 
-pub async fn root(
+#[utoipa::path(
+    post,
+    path = "/get_groups",
+    responses(
+        (status = 200, description = "Groups fetched successfully", body = Vec<Group>)
+    )
+)]
+
+pub async fn get_groups(
     State(app_state): State<AppState>,
     Json(payload): Json<GetGroupRequest>,
 ) -> Json<Vec<Group>> {
