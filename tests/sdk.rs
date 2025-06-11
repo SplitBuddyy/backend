@@ -1,3 +1,4 @@
+use chrono::Utc;
 use reqwest::Client;
 use serde_json;
 use trip_split::models::group::Group;
@@ -22,6 +23,8 @@ impl Sdk {
             owner,
             members: vec![],
             expenses: vec![],
+            group_start_date: Utc::now(),
+            group_end_date: Utc::now(),
         };
         let resp = self
             .client
