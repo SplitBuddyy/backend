@@ -28,7 +28,13 @@ pub async fn create_group(
     } else {
         app_state.groups.lock().await.last().unwrap().id + 1
     };
-    let group = Group::new(id, group.name.as_str(), group.owner);
+    let group = Group::new(
+        id,
+        group.name.as_str(),
+        group.owner,
+        group.group_start_date,
+        group.group_end_date,
+    );
     println!("Group created succesfully: {:?}", group);
     app_state.groups.lock().await.push(group.clone());
     Response::new(format!("Group created succesfully: {:?}", group))

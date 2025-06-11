@@ -1,3 +1,4 @@
+use chrono::Utc;
 use trip_split::models::expenses::Expense;
 use trip_split::models::group::Group;
 use trip_split::models::user::User;
@@ -9,7 +10,7 @@ fn sample_user(id: i32, name: &str) -> User {
 #[test]
 fn integration_group_flow() {
     // Create group
-    let mut group = Group::new(100, "IntegrationTest", 1);
+    let mut group = Group::new(100, "IntegrationTest", 1, Utc::now(), Utc::now());
     let alice = sample_user(1, "Alice");
     let bob = sample_user(2, "Bob");
     let carol = sample_user(3, "Carol");
