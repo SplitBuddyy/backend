@@ -15,12 +15,27 @@ pub async fn add_to_group(
     Json(payload): Json<AddMemberRequest>,
 ) -> Result<Json<bool>, (StatusCode, String)> {
     let mut groups = app_state.groups.lock().await;
+    let users = app_state.users.lock().await;
+    let user_exist = users.iter().find(|u| u.id == payload.member_id);
 
-    if let Some(group) = groups
-        .iter_mut()
-        .find(|g| g.owner == payload.group_info.owner && g.id == payload.group_info.group_id)
-    {
-        group.add_members(payload.member);
+    let user = match user_exist {
+        Some(user) => user.clone(),
+        None => {
+            return Err((
+                StatusCode::NOT_FOUND,
+                "User does not exist in the database".to_string(),
+            ));
+        }
+    };
+
+    if let Some(group) = groups.iter_mut().find(|g| g.id == payload.group_id) {
+        if group.members_ids.contains(&user.id) {
+            return Err((
+                StatusCode::BAD_REQUEST,
+                "User already in the group".to_string(),
+            ));
+        }
+        group.add_members(user.id);
         Ok(Json(true))
     } else {
         Err((

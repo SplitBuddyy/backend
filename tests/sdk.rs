@@ -1,7 +1,7 @@
 use chrono::Utc;
 use reqwest::Client;
 use serde_json;
-use trip_split::models::group::Group;
+use trip_split::models::{group::Group, user::User};
 
 pub struct Sdk {
     client: Client,
@@ -16,12 +16,33 @@ impl Sdk {
         }
     }
 
+    pub async fn create_user(
+        &self,
+        name: &str,
+        email: &str,
+        password: &str,
+    ) -> reqwest::Result<String> {
+        let user = User {
+            id: 0,
+            name: name.to_string(),
+            email: email.to_string(),
+            password: password.to_string(),
+        };
+        let resp = self
+            .client
+            .post(&format!("{}/user/create_user", self.base_url))
+            .json(&user)
+            .send()
+            .await?;
+        resp.text().await
+    }
+
     pub async fn create_group(&self, name: &str, owner: u32) -> reqwest::Result<String> {
         let group = Group {
             id: 0,
             name: name.to_string(),
-            owner,
-            members: vec![],
+            owner_id: owner,
+            members_ids: vec![],
             expenses: vec![],
             group_start_date: Utc::now(),
             group_end_date: Utc::now(),
@@ -39,7 +60,7 @@ impl Sdk {
         let resp = self
             .client
             .post(&format!("{}/group/get_groups", self.base_url))
-            .json(&serde_json::json!({"owner": owner}))
+            .json(&serde_json::json!({"user_id": owner}))
             .send()
             .await?;
         resp.json::<Vec<Group>>().await
