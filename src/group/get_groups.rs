@@ -6,7 +6,7 @@ use crate::{models::group::Group, server::AppState};
 
 #[derive(Serialize, Deserialize, ToSchema)]
 pub struct GetGroupRequest {
-    pub owner: u32,
+    pub user_id: u32,
 }
 
 #[utoipa::path(
@@ -22,10 +22,10 @@ pub async fn get_groups(
     Json(payload): Json<GetGroupRequest>,
 ) -> Json<Vec<Group>> {
     let groups = app_state.groups.lock().await.clone();
-    let owner_groups: Vec<Group> = groups
+    let user_groups: Vec<Group> = groups
         .iter()
-        .filter(|g| g.owner == payload.owner)
+        .filter(|g| g.members_ids.contains(&payload.user_id))
         .cloned()
         .collect();
-    Json(owner_groups)
+    Json(user_groups)
 }

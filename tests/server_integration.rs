@@ -36,18 +36,25 @@ async fn test_create_and_get_group() {
         }
         tokio::time::sleep(std::time::Duration::from_millis(100)).await;
     }
+    // Create a user
+    let resp = sdk
+        .create_user("IntegrationTestUser", "integration@test.com", "password123")
+        .await
+        .expect("create user");
+    assert!(resp.contains("User created succesfully"));
+
     // Create a group
     let resp = sdk
-        .create_group("IntegrationTestGroup", 42)
+        .create_group("IntegrationTestGroup", 0)
         .await
         .expect("create group");
     assert!(resp.contains("Group created succesfully"));
     // Fetch all groups for owner 42
-    let groups = sdk.get_groups(42).await.expect("get groups");
+    let groups = sdk.get_groups(0).await.expect("get groups");
     let group = groups
         .iter()
         .find(|g| g.name == "IntegrationTestGroup")
         .expect("group found");
     assert_eq!(group.name, "IntegrationTestGroup");
-    assert_eq!(group.owner, 42);
+    assert_eq!(group.owner_id, 0);
 }

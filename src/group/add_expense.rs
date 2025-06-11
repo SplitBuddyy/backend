@@ -16,10 +16,7 @@ pub async fn add_expense(
 ) -> Result<Json<bool>, (StatusCode, String)> {
     let mut groups = app_state.groups.lock().await;
 
-    if let Some(group) = groups
-        .iter_mut()
-        .find(|g| g.owner == payload.group_info.owner && g.id == payload.group_info.group_id)
-    {
+    if let Some(group) = groups.iter_mut().find(|g| g.id == payload.group_id) {
         group.add_expense(payload.expense);
         Ok(Json(true))
     } else {

@@ -4,19 +4,16 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use crate::models::{
-    expenses::{Expense, Transaction},
-    user::User,
-};
+use crate::models::expenses::{Expense, Transaction};
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct Group {
     #[serde(skip_deserializing)]
     pub id: u32,
     pub name: String,
-    pub owner: u32,
+    pub owner_id: u32,
     #[serde(skip_deserializing)]
-    pub members: Vec<User>,
+    pub members_ids: Vec<u32>,
     #[serde(skip_deserializing)]
     pub expenses: Vec<Expense>,
     pub group_start_date: DateTime<Utc>,
@@ -24,18 +21,17 @@ pub struct Group {
 }
 #[derive(Deserialize, ToSchema)]
 pub struct GroupRequest {
-    pub owner: u32,
     pub group_id: u32,
 }
 #[derive(Deserialize, ToSchema)]
 pub struct ExpenseAddRequest {
-    pub group_info: GroupRequest,
+    pub group_id: u32,
     pub expense: Expense,
 }
 #[derive(Deserialize, ToSchema)]
 pub struct AddMemberRequest {
-    pub group_info: GroupRequest,
-    pub member: User,
+    pub group_id: u32,
+    pub member_id: u32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
@@ -59,54 +55,58 @@ impl Group {
     pub fn new(
         id: u32,
         name: &str,
-        owner: u32,
+        owner_id: u32,
         group_start_date: DateTime<Utc>,
         group_end_date: DateTime<Utc>,
     ) -> Self {
         Self {
             id,
-            owner,
+            owner_id,
             name: name.to_string(),
-            members: Vec::new(),
+            members_ids: vec![owner_id],
             expenses: Vec::new(),
             group_start_date,
             group_end_date,
         }
     }
-    pub fn add_members(&mut self, member: User) {
-        self.members.push(member);
+    pub fn add_members(&mut self, member_id: u32) {
+        if !self.members_ids.contains(&member_id) {
+            self.members_ids.push(member_id);
+        }
     }
     pub fn add_expense(&mut self, expense: Expense) {
         self.expenses.push(expense);
     }
-    pub fn get_group_summary(&mut self) -> GroupSummary {
-        let mut total_spent = 0.0;
-        let mut transactions: Vec<Transaction> = Vec::new();
-        for expense in &self.expenses {
-            total_spent += expense.amount;
-            let share = expense.amount / expense.participants.len() as f64;
-            for participant in &expense.participants {
-                let transaction = Transaction {
-                    id: transactions.len() as i32 + 1,
-                    payer: expense.payer.clone(),
-                    receiver: participant.clone(),
-                    amount: share,
-                    date: expense.date.clone(),
-                };
-                transactions.push(transaction);
-            }
-        }
-        GroupSummary {
-            group: self.clone(),
-            total_spent,
-            expenses: self.expenses.clone(),
-            transactions,
+}
+
+pub fn get_group_summary(group: Group) -> GroupSummary {
+    let mut total_spent = 0.0;
+    let mut transactions: Vec<Transaction> = Vec::new();
+    for expense in &group.expenses {
+        total_spent += expense.amount;
+        let share = expense.amount / expense.participants_ids.len() as f64;
+        for participant in &expense.participants_ids {
+            let transaction = Transaction {
+                id: transactions.len() as i32 + 1,
+                payer_id: expense.payer_id,
+                receiver_id: *participant,
+                amount: share,
+                date: expense.date.clone(),
+            };
+            transactions.push(transaction);
         }
     }
+    GroupSummary {
+        group: group.clone(),
+        total_spent,
+        expenses: group.expenses.clone(),
+        transactions,
+    }
 }
+
 impl fmt::Display for Group {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Group: {}\nMembers: {:?}", self.name, self.members)
+        write!(f, "Group: {}\nMembers: {:?}", self.name, self.members_ids)
     }
 }
 
@@ -116,7 +116,7 @@ mod tests {
     use crate::models::expenses::Expense;
     use crate::models::user::User;
 
-    fn sample_user(id: i32, name: &str) -> User {
+    fn sample_user(id: u32, name: &str) -> User {
         User::new(id, name, &format!("{}@example.com", name), "pass")
     }
 
@@ -125,8 +125,8 @@ mod tests {
         let group = Group::new(1, "Trip", 42, Utc::now(), Utc::now());
         assert_eq!(group.id, 1);
         assert_eq!(group.name, "Trip");
-        assert_eq!(group.owner, 42);
-        assert!(group.members.is_empty());
+        assert_eq!(group.owner_id, 42);
+        assert_eq!(group.members_ids, vec![42]);
         assert!(group.expenses.is_empty());
     }
 
@@ -134,9 +134,9 @@ mod tests {
     fn test_add_members() {
         let mut group = Group::new(2, "Party", 7, Utc::now(), Utc::now());
         let user = sample_user(1, "Alice");
-        group.add_members(user.clone());
-        assert_eq!(group.members.len(), 1);
-        assert_eq!(group.members[0].name, "Alice");
+        group.add_members(user.id);
+        assert_eq!(group.members_ids.len(), 2);
+        assert_eq!(group.members_ids[1], user.id);
     }
 
     #[test]
@@ -147,8 +147,8 @@ mod tests {
             id: 1,
             description: Some("Pizza".to_string()),
             amount: 30.0,
-            payer: user.clone(),
-            participants: vec![user.clone()],
+            payer_id: user.id,
+            participants_ids: vec![user.id],
             date: "2024-01-01".to_string(),
         };
         group.add_expense(expense.clone());
@@ -164,12 +164,12 @@ mod tests {
             id: 2,
             description: Some("Sandwiches".to_string()),
             amount: 20.0,
-            payer: user.clone(),
-            participants: vec![user.clone()],
+            payer_id: user.id,
+            participants_ids: vec![user.id],
             date: "2024-01-02".to_string(),
         };
         group.add_expense(expense.clone());
-        let summary = group.get_group_summary();
+        let summary = get_group_summary(group);
         assert_eq!(summary.total_spent, 20.0);
         assert_eq!(summary.expenses.len(), 1);
         assert_eq!(summary.transactions.len(), 1);
@@ -202,10 +202,10 @@ mod tests {
         let mut group = Group::new(7, "MultiMembers", 12, Utc::now(), Utc::now());
         let user1 = sample_user(4, "Dave");
         let user2 = sample_user(5, "Eve");
-        group.add_members(user1.clone());
-        group.add_members(user2.clone());
-        assert_eq!(group.members.len(), 2);
-        assert_eq!(group.members[1].name, "Eve");
+        group.add_members(user1.id);
+        group.add_members(user2.id);
+        assert_eq!(group.members_ids.len(), 3);
+        assert_eq!(group.members_ids[2], user2.id);
     }
 
     #[test]
@@ -216,16 +216,16 @@ mod tests {
             id: 3,
             description: Some("Coffee".to_string()),
             amount: 10.0,
-            payer: user.clone(),
-            participants: vec![user.clone()],
+            payer_id: user.id,
+            participants_ids: vec![user.id],
             date: "2024-01-03".to_string(),
         };
         let expense2 = Expense {
             id: 4,
             description: Some("Bagel".to_string()),
             amount: 5.0,
-            payer: user.clone(),
-            participants: vec![user.clone()],
+            payer_id: user.id,
+            participants_ids: vec![user.id],
             date: "2024-01-04".to_string(),
         };
         group.add_expense(expense1);
@@ -238,9 +238,9 @@ mod tests {
     fn test_add_duplicate_member() {
         let mut group = Group::new(9, "DupMember", 14, Utc::now(), Utc::now());
         let user = sample_user(7, "Grace");
-        group.add_members(user.clone());
-        group.add_members(user.clone());
-        assert_eq!(group.members.len(), 2); // No deduplication in add_members
+        group.add_members(user.id);
+        group.add_members(user.id);
+        assert_eq!(group.members_ids.len(), 2);
     }
 
     #[test]
@@ -251,12 +251,12 @@ mod tests {
             id: 5,
             description: Some("Solo".to_string()),
             amount: 50.0,
-            payer: user.clone(),
-            participants: vec![],
+            payer_id: user.id,
+            participants_ids: vec![],
             date: "2024-01-05".to_string(),
         };
         group.add_expense(expense.clone());
-        let summary = group.get_group_summary();
+        let summary = get_group_summary(group);
         assert_eq!(summary.expenses.len(), 1);
         // No transactions should be created if no participants
         assert_eq!(summary.transactions.len(), 0);

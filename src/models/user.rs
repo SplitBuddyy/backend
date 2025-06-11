@@ -4,13 +4,13 @@ use utoipa::ToSchema;
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct User {
     #[serde(skip_deserializing)]
-    pub id: i32,
+    pub id: u32,
     pub name: String,
     pub email: String,
     pub password: String,
 }
 impl User {
-    pub fn new(id: i32, name: &str, email: &str, password: &str) -> User {
+    pub fn new(id: u32, name: &str, email: &str, password: &str) -> User {
         User {
             id,
             name: name.to_string(),
