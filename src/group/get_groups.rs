@@ -11,13 +11,13 @@ pub struct GetGroupRequest {
 
 #[utoipa::path(
     post,
-    path = "/get_groups",
+    path = "/get_user_groups",
     responses(
         (status = 200, description = "Groups fetched successfully", body = Vec<Group>)
     )
 )]
 
-pub async fn get_groups(
+pub async fn get_user_groups(
     State(app_state): State<AppState>,
     Json(payload): Json<GetGroupRequest>,
 ) -> Json<Vec<Group>> {

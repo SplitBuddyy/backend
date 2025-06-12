@@ -18,18 +18,18 @@ use create_group::__path_create_group;
 use create_group::create_group;
 
 mod get_groups;
-use get_groups::__path_get_groups;
-use get_groups::get_groups;
+use get_groups::__path_get_user_groups;
+use get_groups::get_user_groups;
 
 use utoipa::OpenApi;
 #[derive(OpenApi)]
-#[openapi(paths(get_groups, create_group, add_to_group, calculate_expense, add_expense))]
+#[openapi(paths(get_user_groups, create_group, add_to_group, calculate_expense, add_expense))]
 pub struct GroupApi;
 
 pub fn router(app_state: AppState) -> Router {
     Router::new()
         .route("/create_group", post(create_group))
-        .route("/get_groups", post(get_groups))
+        .route("/get_user_groups", post(get_user_groups))
         .route("/add_to_group", post(add_to_group))
         .route("/add_expense", post(add_expense))
         .route("/calculate", post(calculate_expense))
