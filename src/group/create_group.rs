@@ -3,19 +3,15 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use crate::{
-    auth::utils::extract_user_id_from_headers,
-    models::group::Group,
-    server::AppState,
-};
+use crate::{auth::utils::extract_user_id_from_headers, models::group::Group, server::AppState};
 
 #[derive(Deserialize, Serialize, ToSchema)]
 pub struct CreateGroupRequest {
-   pub name: String,
-   pub group_start_date: DateTime<Utc>,
-   pub group_end_date: DateTime<Utc>,
-   pub description: String,
-   pub location: String,
+    pub name: String,
+    pub group_start_date: DateTime<Utc>,
+    pub group_end_date: DateTime<Utc>,
+    pub description: String,
+    pub location: String,
 }
 
 #[utoipa::path(

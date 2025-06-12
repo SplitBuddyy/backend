@@ -1,7 +1,13 @@
-use axum::{extract::State, http::{HeaderMap, StatusCode}, Json};
+use axum::{
+    extract::State,
+    http::{HeaderMap, StatusCode},
+    Json,
+};
 
 use crate::{
-    auth::utils::extract_user_id_from_headers, models::group::{get_group_summary, GroupRequest, GroupSummary}, server::AppState
+    auth::utils::extract_user_id_from_headers,
+    models::group::{get_group_summary, GroupRequest, GroupSummary},
+    server::AppState,
 };
 
 #[utoipa::path(
@@ -18,7 +24,7 @@ pub async fn calculate_expense(
     headers: HeaderMap,
     Json(payload): Json<GroupRequest>,
 ) -> Result<Json<GroupSummary>, (StatusCode, String)> {
-    let _ = match extract_user_id_from_headers(&headers, &app_state).await {
+    match extract_user_id_from_headers(&headers, &app_state).await {
         Ok(_) => (),
         Err(_) => return Err((StatusCode::UNAUTHORIZED, "Invalid API key".to_string())),
     };

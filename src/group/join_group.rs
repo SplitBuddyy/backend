@@ -1,6 +1,12 @@
-use axum::{extract::State, http::{HeaderMap, StatusCode}, Json};
+use axum::{
+    extract::State,
+    http::{HeaderMap, StatusCode},
+    Json,
+};
 
-use crate::{auth::utils::extract_user_id_from_headers, models::group::JoinGroupRequest, server::AppState};
+use crate::{
+    auth::utils::extract_user_id_from_headers, models::group::JoinGroupRequest, server::AppState,
+};
 
 #[utoipa::path(
     post,

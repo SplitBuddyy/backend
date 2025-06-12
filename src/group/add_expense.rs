@@ -1,6 +1,12 @@
-use axum::{extract::State, http::{HeaderMap, StatusCode}, Json};
+use axum::{
+    extract::State,
+    http::{HeaderMap, StatusCode},
+    Json,
+};
 
-use crate::{auth::utils::extract_user_id_from_headers, models::group::ExpenseAddRequest, server::AppState};
+use crate::{
+    auth::utils::extract_user_id_from_headers, models::group::ExpenseAddRequest, server::AppState,
+};
 
 #[utoipa::path(
     post,
@@ -16,8 +22,7 @@ pub async fn add_expense(
     headers: HeaderMap,
     Json(payload): Json<ExpenseAddRequest>,
 ) -> Result<Json<bool>, (StatusCode, String)> {
-
-    let _ = match extract_user_id_from_headers(&headers, &app_state).await {
+    match extract_user_id_from_headers(&headers, &app_state).await {
         Ok(_) => (),
         Err(_) => return Err((StatusCode::UNAUTHORIZED, "Invalid API key".to_string())),
     };

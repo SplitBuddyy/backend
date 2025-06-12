@@ -10,7 +10,15 @@ fn sample_user(id: u32, name: &str) -> User {
 #[test]
 fn integration_group_flow() {
     // Create group
-    let mut group = Group::new(100, "IntegrationTest", 1, Utc::now(), Utc::now(), "Description".to_string(), "Location".to_string());
+    let mut group = Group::new(
+        100,
+        "IntegrationTest",
+        1,
+        Utc::now(),
+        Utc::now(),
+        "Description".to_string(),
+        "Location".to_string(),
+    );
     let alice = sample_user(1, "Alice");
     let bob = sample_user(2, "Bob");
     let carol = sample_user(3, "Carol");

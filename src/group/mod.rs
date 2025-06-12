@@ -23,7 +23,13 @@ use get_groups::get_user_groups;
 
 use utoipa::OpenApi;
 #[derive(OpenApi)]
-#[openapi(paths(get_user_groups, create_group, join_group, calculate_expense, add_expense))]
+#[openapi(paths(
+    get_user_groups,
+    create_group,
+    join_group,
+    calculate_expense,
+    add_expense
+))]
 pub struct GroupApi;
 
 pub fn router(app_state: AppState) -> Router {

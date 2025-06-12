@@ -1,6 +1,6 @@
 use axum::{extract::State, response::Response, Json};
-use sha2::{Digest, Sha256};
 use base64::{engine::general_purpose, Engine as _};
+use sha2::{Digest, Sha256};
 
 use crate::{models::user::User, server::AppState};
 
@@ -58,6 +58,10 @@ pub async fn register(
     let result = hasher.finalize();
     let token = general_purpose::STANDARD.encode(result);
     // Save the token with the user id
-    app_state.api_tokens.lock().await.insert(token.clone(), user.id);
+    app_state
+        .api_tokens
+        .lock()
+        .await
+        .insert(token.clone(), user.id);
     Response::new(token)
 }

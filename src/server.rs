@@ -1,6 +1,6 @@
+use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
-use std::collections::HashMap;
 
 use axum::{routing::get, Router};
 use tower_http::cors::CorsLayer;

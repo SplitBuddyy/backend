@@ -1,7 +1,4 @@
-use axum::{
-    routing::post,
-    Router,
-};
+use axum::{routing::post, Router};
 use utoipa::OpenApi;
 
 pub mod login;
