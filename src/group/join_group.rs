@@ -1,22 +1,28 @@
-use axum::{extract::State, http::StatusCode, Json};
+use axum::{extract::State, http::{HeaderMap, StatusCode}, Json};
 
-use crate::{models::group::AddMemberRequest, server::AppState};
+use crate::{auth::utils::extract_user_id_from_headers, models::group::JoinGroupRequest, server::AppState};
 
 #[utoipa::path(
     post,
-    path = "/add_to_group",
-    request_body = AddMemberRequest,
+    path = "/join_group",
+    request_body = JoinGroupRequest,
     responses(
         (status = 200, description = "User added to group successfully", body = bool)
-    )
+    ),
+    security(("api_key" = []))
 )]
-pub async fn add_to_group(
+pub async fn join_group(
     State(app_state): State<AppState>,
-    Json(payload): Json<AddMemberRequest>,
+    headers: HeaderMap,
+    Json(payload): Json<JoinGroupRequest>,
 ) -> Result<Json<bool>, (StatusCode, String)> {
+    let user_id = match extract_user_id_from_headers(&headers, &app_state).await {
+        Ok(id) => id,
+        Err(_) => return Err((StatusCode::UNAUTHORIZED, "Invalid API key".to_string())),
+    };
     let mut groups = app_state.groups.lock().await;
     let users = app_state.users.lock().await;
-    let user_exist = users.iter().find(|u| u.id == payload.member_id);
+    let user_exist = users.iter().find(|u| u.id == user_id);
 
     let user = match user_exist {
         Some(user) => user.clone(),

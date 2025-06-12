@@ -3,16 +3,20 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use crate::{auth::utils::get_user_id_by_api_key, models::group::Group, server::AppState};
+use crate::{
+    auth::utils::extract_user_id_from_headers,
+    models::group::Group,
+    server::AppState,
+};
 
 #[derive(Deserialize, Serialize, ToSchema)]
 pub struct CreateGroupRequest {
    pub name: String,
    pub group_start_date: DateTime<Utc>,
    pub group_end_date: DateTime<Utc>,
+   pub description: String,
+   pub location: String,
 }
-
-
 
 #[utoipa::path(
     post,
@@ -28,12 +32,10 @@ pub async fn create_group(
     headers: HeaderMap,
     Json(group): Json<CreateGroupRequest>,
 ) -> Response<String> {
-    let api_key = headers.get("todo_apikey").unwrap().to_str().unwrap();
-    let user_id = get_user_id_by_api_key(api_key, &app_state).await;
-    if user_id.is_none() {
-        return Response::new("Invalid API key".to_string());
-    }
-    let user_id = user_id.unwrap();
+    let user_id = match extract_user_id_from_headers(&headers, &app_state).await {
+        Ok(id) => id,
+        Err(msg) => return Response::new(msg),
+    };
 
     if app_state
         .groups
@@ -59,6 +61,8 @@ pub async fn create_group(
         owner_id,
         group.group_start_date,
         group.group_end_date,
+        group.description,
+        group.location,
     );
 
     println!("Group created succesfully: {:?}", group);

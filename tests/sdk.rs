@@ -46,6 +46,8 @@ impl Sdk {
             expenses: vec![],
             group_start_date: Utc::now(),
             group_end_date: Utc::now(),
+            description: "Description".to_string(),
+            location: "Location".to_string(),
         };
         let resp = self
             .client
