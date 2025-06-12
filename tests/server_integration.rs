@@ -37,20 +37,22 @@ async fn test_create_and_get_group() {
         tokio::time::sleep(std::time::Duration::from_millis(100)).await;
     }
     // Create a user
-    let resp = sdk
+    let api_token = sdk
         .create_user("IntegrationTestUser", "integration@test.com", "password123")
         .await
         .expect("create user");
-    assert!(resp.contains("User created succesfully"));
+    assert!(api_token.contains("p4IcTeRlfeOLA4rqeM8nWSWI0xfJpgtkwIJetmcUC/k="));
 
     // Create a group
     let resp = sdk
-        .create_group("IntegrationTestGroup", 0)
+        .create_group("IntegrationTestGroup", 0, &api_token)
         .await
         .expect("create group");
+    println!("Group created: {}", resp);
+
     assert!(resp.contains("Group created succesfully"));
     // Fetch all groups for owner 42
-    let groups = sdk.get_groups(0).await.expect("get groups");
+    let groups = sdk.get_groups(0, &api_token).await.expect("get groups");
     let group = groups
         .iter()
         .find(|g| g.name == "IntegrationTestGroup")

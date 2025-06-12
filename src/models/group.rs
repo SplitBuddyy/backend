@@ -18,6 +18,8 @@ pub struct Group {
     pub expenses: Vec<Expense>,
     pub group_start_date: DateTime<Utc>,
     pub group_end_date: DateTime<Utc>,
+    pub description: String,
+    pub location: String,
 }
 #[derive(Deserialize, ToSchema)]
 pub struct GroupRequest {
@@ -29,9 +31,8 @@ pub struct ExpenseAddRequest {
     pub expense: Expense,
 }
 #[derive(Deserialize, ToSchema)]
-pub struct AddMemberRequest {
+pub struct JoinGroupRequest {
     pub group_id: u32,
-    pub member_id: u32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
@@ -58,6 +59,8 @@ impl Group {
         owner_id: u32,
         group_start_date: DateTime<Utc>,
         group_end_date: DateTime<Utc>,
+        description: String,
+        location: String,
     ) -> Self {
         Self {
             id,
@@ -67,6 +70,8 @@ impl Group {
             expenses: Vec::new(),
             group_start_date,
             group_end_date,
+            description,
+            location,
         }
     }
     pub fn add_members(&mut self, member_id: u32) {
@@ -122,7 +127,15 @@ mod tests {
 
     #[test]
     fn test_group_new() {
-        let group = Group::new(1, "Trip", 42, Utc::now(), Utc::now());
+        let group = Group::new(
+            1,
+            "Trip",
+            42,
+            Utc::now(),
+            Utc::now(),
+            "Description".to_string(),
+            "Location".to_string(),
+        );
         assert_eq!(group.id, 1);
         assert_eq!(group.name, "Trip");
         assert_eq!(group.owner_id, 42);
@@ -132,7 +145,15 @@ mod tests {
 
     #[test]
     fn test_add_members() {
-        let mut group = Group::new(2, "Party", 7, Utc::now(), Utc::now());
+        let mut group = Group::new(
+            2,
+            "Party",
+            7,
+            Utc::now(),
+            Utc::now(),
+            "Description".to_string(),
+            "Location".to_string(),
+        );
         let user = sample_user(1, "Alice");
         group.add_members(user.id);
         assert_eq!(group.members_ids.len(), 2);
@@ -141,7 +162,15 @@ mod tests {
 
     #[test]
     fn test_add_expense() {
-        let mut group = Group::new(3, "Dinner", 8, Utc::now(), Utc::now());
+        let mut group = Group::new(
+            3,
+            "Dinner",
+            8,
+            Utc::now(),
+            Utc::now(),
+            "Description".to_string(),
+            "Location".to_string(),
+        );
         let user = sample_user(2, "Bob");
         let expense = Expense {
             id: 1,
@@ -158,7 +187,15 @@ mod tests {
 
     #[test]
     fn test_group_summary() {
-        let mut group = Group::new(4, "Lunch", 9, Utc::now(), Utc::now());
+        let mut group = Group::new(
+            4,
+            "Lunch",
+            9,
+            Utc::now(),
+            Utc::now(),
+            "Description".to_string(),
+            "Location".to_string(),
+        );
         let user = sample_user(3, "Carol");
         let expense = Expense {
             id: 2,
@@ -178,14 +215,30 @@ mod tests {
 
     #[test]
     fn test_group_display() {
-        let group = Group::new(5, "TestGroup", 10, Utc::now(), Utc::now());
+        let group = Group::new(
+            5,
+            "TestGroup",
+            10,
+            Utc::now(),
+            Utc::now(),
+            "Description".to_string(),
+            "Location".to_string(),
+        );
         let display = format!("{}", group);
         assert!(display.contains("Group: TestGroup"));
     }
 
     #[test]
     fn test_group_summary_display() {
-        let group = Group::new(6, "SumGroup", 11, Utc::now(), Utc::now());
+        let group = Group::new(
+            6,
+            "SumGroup",
+            11,
+            Utc::now(),
+            Utc::now(),
+            "Description".to_string(),
+            "Location".to_string(),
+        );
         let summary = GroupSummary {
             group,
             total_spent: 100.0,
@@ -199,7 +252,15 @@ mod tests {
 
     #[test]
     fn test_add_multiple_members() {
-        let mut group = Group::new(7, "MultiMembers", 12, Utc::now(), Utc::now());
+        let mut group = Group::new(
+            7,
+            "MultiMembers",
+            12,
+            Utc::now(),
+            Utc::now(),
+            "Description".to_string(),
+            "Location".to_string(),
+        );
         let user1 = sample_user(4, "Dave");
         let user2 = sample_user(5, "Eve");
         group.add_members(user1.id);
@@ -210,7 +271,15 @@ mod tests {
 
     #[test]
     fn test_add_multiple_expenses() {
-        let mut group = Group::new(8, "MultiExpenses", 13, Utc::now(), Utc::now());
+        let mut group = Group::new(
+            8,
+            "MultiExpenses",
+            13,
+            Utc::now(),
+            Utc::now(),
+            "Description".to_string(),
+            "Location".to_string(),
+        );
         let user = sample_user(6, "Frank");
         let expense1 = Expense {
             id: 3,
@@ -236,7 +305,15 @@ mod tests {
 
     #[test]
     fn test_add_duplicate_member() {
-        let mut group = Group::new(9, "DupMember", 14, Utc::now(), Utc::now());
+        let mut group = Group::new(
+            9,
+            "DupMember",
+            14,
+            Utc::now(),
+            Utc::now(),
+            "Description".to_string(),
+            "Location".to_string(),
+        );
         let user = sample_user(7, "Grace");
         group.add_members(user.id);
         group.add_members(user.id);
@@ -245,7 +322,15 @@ mod tests {
 
     #[test]
     fn test_expense_with_no_participants() {
-        let mut group = Group::new(10, "NoParticipants", 15, Utc::now(), Utc::now());
+        let mut group = Group::new(
+            10,
+            "NoParticipants",
+            15,
+            Utc::now(),
+            Utc::now(),
+            "Description".to_string(),
+            "Location".to_string(),
+        );
         let user = sample_user(8, "Heidi");
         let expense = Expense {
             id: 5,
