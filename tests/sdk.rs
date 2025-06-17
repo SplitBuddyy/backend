@@ -30,14 +30,19 @@ impl Sdk {
         };
         let resp = self
             .client
-            .post(&format!("{}/user/create_user", self.base_url))
+            .post(&format!("{}/auth/register", self.base_url))
             .json(&user)
             .send()
             .await?;
         resp.text().await
     }
 
-    pub async fn create_group(&self, name: &str, owner: u32) -> reqwest::Result<String> {
+    pub async fn create_group(
+        &self,
+        name: &str,
+        owner: u32,
+        api_token: &str,
+    ) -> reqwest::Result<String> {
         let group = Group {
             id: 0,
             name: name.to_string(),
@@ -46,21 +51,24 @@ impl Sdk {
             expenses: vec![],
             group_start_date: Utc::now(),
             group_end_date: Utc::now(),
+            description: "Description".to_string(),
+            location: "Location".to_string(),
         };
         let resp = self
             .client
             .post(&format!("{}/group/create_group", self.base_url))
+            .header("todo_apikey", api_token)
             .json(&group)
             .send()
             .await?;
         resp.text().await
     }
 
-    pub async fn get_groups(&self, owner: u32) -> reqwest::Result<Vec<Group>> {
+    pub async fn get_groups(&self, owner: u32, api_token: &str) -> reqwest::Result<Vec<Group>> {
         let resp = self
             .client
-            .post(&format!("{}/group/get_groups", self.base_url))
-            .json(&serde_json::json!({"user_id": owner}))
+            .post(&format!("{}/group/get_user_groups", self.base_url))
+            .header("todo_apikey", api_token)
             .send()
             .await?;
         resp.json::<Vec<Group>>().await

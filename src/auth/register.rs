@@ -1,16 +1,18 @@
 use axum::{extract::State, response::Response, Json};
+use base64::{engine::general_purpose, Engine as _};
+use sha2::{Digest, Sha256};
 
 use crate::{models::user::User, server::AppState};
 
 #[utoipa::path(
     post,
-    path = "/create_user",
+    path = "/register",
     request_body = User,
     responses(
         (status = 200, description = "User created successfully", body = String)
     )
 )]
-pub async fn create_user(
+pub async fn register(
     State(app_state): State<AppState>,
     Json(user): Json<User>,
 ) -> Response<String> {
@@ -49,5 +51,17 @@ pub async fn create_user(
     );
     println!("User created succesfully: {:?}", user);
     app_state.users.lock().await.push(user.clone());
-    Response::new(format!("User created succesfully: {:?}", user))
+    // Generate API token as hash of name and password
+    let mut hasher = Sha256::new();
+    hasher.update(user.name.as_bytes());
+    hasher.update(user.password.as_bytes());
+    let result = hasher.finalize();
+    let token = general_purpose::STANDARD.encode(result);
+    // Save the token with the user id
+    app_state
+        .api_tokens
+        .lock()
+        .await
+        .insert(token.clone(), user.id);
+    Response::new(token)
 }
