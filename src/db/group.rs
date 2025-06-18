@@ -1,16 +1,7 @@
-use super::Database;
-use chrono::{DateTime, Utc};
-use sqlx::Row;
+use crate::models::group::Group;
 
-pub struct Group {
-    pub id: Option<u32>,
-    pub name: String,
-    pub owner_id: u32,
-    pub group_start_date: DateTime<Utc>,
-    pub group_end_date: DateTime<Utc>,
-    pub description: String,
-    pub location: String,
-}
+use super::Database;
+use sqlx::Row;
 
 impl Database {
     pub async fn create_group(&self, group: &Group) -> Result<u32, sqlx::Error> {
@@ -101,6 +92,8 @@ impl Database {
 
 #[cfg(test)]
 mod tests {
+    use chrono::Utc;
+
     use crate::{db::tests::IN_MEMORY_DB, models::user::User};
 
     use super::*;
@@ -183,7 +176,7 @@ mod tests {
     
         let group_id = db.create_group(&group).await.unwrap();
         db.add_user_to_group(group_id, user_id).await.unwrap();
-        
+
         let groups = db.get_user_groups(user_id).await.unwrap();
         assert_eq!(groups.len(), 2);
         assert!(groups.contains(&group_id));

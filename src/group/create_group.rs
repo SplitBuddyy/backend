@@ -32,36 +32,17 @@ pub async fn create_group(
         Ok(id) => id,
         Err(msg) => return Response::new(msg),
     };
-
-    if app_state
-        .groups
-        .lock()
-        .await
-        .iter()
-        .any(|g| g.name == group.name)
-    {
-        return Response::new("Group already exists".to_string());
-    }
-
-    let id = if app_state.groups.lock().await.is_empty() {
-        0
-    } else {
-        app_state.groups.lock().await.last().unwrap().id + 1
-    };
-
-    let owner_id = user_id;
-
     let group = Group::new(
-        id,
         group.name.as_str(),
-        owner_id,
+        user_id,
         group.group_start_date,
         group.group_end_date,
         group.description,
         group.location,
     );
-
-    println!("Group created succesfully: {:?}", group);
-    app_state.groups.lock().await.push(group.clone());
-    Response::new(format!("Group created succesfully: {:?}", group))
+    
+    match app_state.db.create_group(&group).await {
+        Ok(id) => return Response::new(format!("Group created succesfully: {:?}", id)),
+        Err(e) => return Response::new(e.to_string()),
+    };
 }

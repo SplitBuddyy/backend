@@ -1,6 +1,6 @@
 use chrono::Utc;
 use reqwest::Client;
-use serde_json;
+    use serde_json;
 use trip_split::models::{group::Group, user::User};
 
 pub struct Sdk {
@@ -23,7 +23,7 @@ impl Sdk {
         password: &str,
     ) -> reqwest::Result<String> {
         let user = User {
-            id: 0,
+            id: Some(0),
             name: name.to_string(),
             email: email.to_string(),
             password: password.to_string(),

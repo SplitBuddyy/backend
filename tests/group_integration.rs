@@ -4,7 +4,9 @@ use trip_split::models::group::{get_group_summary, Group};
 use trip_split::models::user::User;
 
 fn sample_user(id: u32, name: &str) -> User {
-    User::new(id, name, &format!("{}@example.com", name), "pass")
+    let mut user = User::new( name, &format!("{}@example.com", name), "pass");
+    user.id = Some(id);
+    user
 }
 
 #[test]
@@ -24,9 +26,9 @@ fn integration_group_flow() {
     let carol = sample_user(3, "Carol");
 
     // Add members
-    group.add_members(alice.id);
-    group.add_members(bob.id);
-    group.add_members(carol.id);
+    group.add_members(alice.id.unwrap());
+    group.add_members(bob.id.unwrap());
+    group.add_members(carol.id.unwrap());
     assert_eq!(group.members_ids.len(), 3);
 
     // Add expenses
@@ -34,16 +36,16 @@ fn integration_group_flow() {
         id: 1,
         description: Some("Lunch".to_string()),
         amount: 60.0,
-        payer_id: alice.id,
-        participants_ids: vec![alice.id, bob.id, carol.id],
+        payer_id: alice.id.unwrap(),
+        participants_ids: vec![alice.id.unwrap(), bob.id.unwrap(), carol.id.unwrap()],
         date: "2024-06-01".to_string(),
     };
     let expense2 = Expense {
         id: 2,
         description: Some("Drinks".to_string()),
         amount: 30.0,
-        payer_id: bob.id,
-        participants_ids: vec![alice.id, bob.id],
+        payer_id: bob.id.unwrap(),
+        participants_ids: vec![alice.id.unwrap(), bob.id.unwrap()],
         date: "2024-06-02".to_string(),
     };
     group.add_expense(expense1);

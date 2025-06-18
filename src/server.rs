@@ -3,6 +3,7 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 
 use axum::{routing::get, Router};
+use tokio::fs;
 use tower_http::cors::CorsLayer;
 
 use axum::serve;
@@ -12,6 +13,7 @@ use utoipa::openapi::Info;
 use utoipa_swagger_ui::SwaggerUi;
 
 use crate::auth;
+use crate::db::Database;
 use crate::group;
 use crate::models::group::Group;
 use crate::models::user::User;
@@ -21,9 +23,7 @@ use utoipa::OpenApi;
 
 #[derive(Clone)]
 pub struct AppState {
-    pub users: Arc<Mutex<Vec<User>>>,
-    pub groups: Arc<Mutex<Vec<Group>>>,
-    pub api_tokens: Arc<Mutex<HashMap<String, u32>>>,
+    pub db: Database,
 }
 #[derive(OpenApi)]
 #[openapi(
@@ -49,12 +49,13 @@ impl Modify for SecurityAddon {
         }
     }
 }
-pub fn app() -> Router {
-    let app_state = AppState {
-        users: Arc::new(Mutex::new(Vec::new())),
-        groups: Arc::new(Mutex::new(Vec::new())),
-        api_tokens: Arc::new(Mutex::new(HashMap::new())),
-    };
+pub async fn app() -> Router {
+    let db_path = "trip_split.db";  
+
+
+    let db = Database::new(db_path).await.unwrap();
+    db.init().await.unwrap();
+    let app_state = AppState { db };
 
     let cors = CorsLayer::permissive();
     let mut doc = ApiDoc::openapi();
@@ -75,7 +76,7 @@ pub async fn start() {
     println!("Listening on http://{}", addr);
     let listener = TcpListener::bind(addr).await.unwrap();
 
-    serve(listener, app()).await.unwrap();
+    serve(listener, app().await).await.unwrap();
 }
 
 #[utoipa::path(

@@ -1,17 +1,5 @@
-use crate::db::Database;
+use crate::{db::Database, models::expenses::Expense};
 use sqlx::Row;
-
-#[derive(Debug, PartialEq)]
-pub struct Expense {
-    pub id: Option<u32>,
-    pub description: String,
-    pub amount: f64,
-    pub payer_id: u32,
-    pub group_id: u32,
-    pub date: String,
-}
-
-
 
 impl Database {
     pub async fn create_expense(&self, expense: &Expense) -> Result<u32, sqlx::Error> {
@@ -112,7 +100,7 @@ impl Database {
 
 #[cfg(test)]
 mod tests {
-    use crate::{db::{group::Group, tests::IN_MEMORY_DB}, models::user::User};
+    use crate::{db::tests::IN_MEMORY_DB, models::{group::Group, user::User}};
 
     /// Test for expense will require a group to be created first, which implies that a user is created first
     use super::*;

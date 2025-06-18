@@ -26,15 +26,14 @@ pub async fn add_expense(
         Ok(_) => (),
         Err(_) => return Err((StatusCode::UNAUTHORIZED, "Invalid API key".to_string())),
     };
-    let mut groups = app_state.groups.lock().await;
-
-    if let Some(group) = groups.iter_mut().find(|g| g.id == payload.group_id) {
-        group.add_expense(payload.expense);
-        Ok(Json(true))
-    } else {
-        Err((
-            StatusCode::NOT_FOUND,
-            "User does not have any group matching those parameters".to_string(),
-        ))
+    match app_state.db.create_expense(&payload.expense).await {
+        Ok(expense_id) => {
+            match app_state.db.add_participant_to_expense(expense_id, payload.expense.payer_id).await {
+                Ok(_) => Ok(Json(true)),
+                Err(e) => Err((StatusCode::BAD_REQUEST, e.to_string())),
+            }
+        }
+        Err(e) => Err((StatusCode::BAD_REQUEST, e.to_string())),
     }
+
 }
