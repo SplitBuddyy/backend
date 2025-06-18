@@ -40,15 +40,11 @@ pub async fn register(
     let id = if app_state.users.lock().await.is_empty() {
         0
     } else {
-        app_state.users.lock().await.last().unwrap().id + 1
+        app_state.users.lock().await.last().unwrap().id.unwrap() + 1
     };
 
-    let user = User::new(
-        id,
-        user.name.as_str(),
-        user.email.as_str(),
-        user.password.as_str(),
-    );
+    let mut user = User::new(user.name.as_str(), user.email.as_str(), user.password.as_str());
+    user.id = Some(id);
     println!("User created succesfully: {:?}", user);
     app_state.users.lock().await.push(user.clone());
     // Generate API token as hash of name and password
@@ -62,6 +58,6 @@ pub async fn register(
         .api_tokens
         .lock()
         .await
-        .insert(token.clone(), user.id);
+        .insert(token.clone(), user.id.unwrap());
     Response::new(token)
 }

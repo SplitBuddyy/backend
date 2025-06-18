@@ -122,7 +122,9 @@ mod tests {
     use crate::models::user::User;
 
     fn sample_user(id: u32, name: &str) -> User {
-        User::new(id, name, &format!("{}@example.com", name), "pass")
+        let mut user = User::new(name, &format!("{}@example.com", name), "pass");
+        user.id = Some(id);
+        user
     }
 
     #[test]
@@ -155,9 +157,9 @@ mod tests {
             "Location".to_string(),
         );
         let user = sample_user(1, "Alice");
-        group.add_members(user.id);
+        group.add_members(user.id.unwrap());
         assert_eq!(group.members_ids.len(), 2);
-        assert_eq!(group.members_ids[1], user.id);
+        assert_eq!(group.members_ids[1], user.id.unwrap());
     }
 
     #[test]
@@ -176,8 +178,8 @@ mod tests {
             id: 1,
             description: Some("Pizza".to_string()),
             amount: 30.0,
-            payer_id: user.id,
-            participants_ids: vec![user.id],
+            payer_id: user.id.unwrap(),
+            participants_ids: vec![user.id.unwrap()],
             date: "2024-01-01".to_string(),
         };
         group.add_expense(expense.clone());
@@ -201,8 +203,8 @@ mod tests {
             id: 2,
             description: Some("Sandwiches".to_string()),
             amount: 20.0,
-            payer_id: user.id,
-            participants_ids: vec![user.id],
+            payer_id: user.id.unwrap(),
+            participants_ids: vec![user.id.unwrap()],
             date: "2024-01-02".to_string(),
         };
         group.add_expense(expense.clone());
@@ -263,10 +265,10 @@ mod tests {
         );
         let user1 = sample_user(4, "Dave");
         let user2 = sample_user(5, "Eve");
-        group.add_members(user1.id);
-        group.add_members(user2.id);
+        group.add_members(user1.id.unwrap());
+        group.add_members(user2.id.unwrap());
         assert_eq!(group.members_ids.len(), 3);
-        assert_eq!(group.members_ids[2], user2.id);
+        assert_eq!(group.members_ids[2], user2.id.unwrap());
     }
 
     #[test]
@@ -285,16 +287,16 @@ mod tests {
             id: 3,
             description: Some("Coffee".to_string()),
             amount: 10.0,
-            payer_id: user.id,
-            participants_ids: vec![user.id],
+            payer_id: user.id.unwrap(),
+            participants_ids: vec![user.id.unwrap()],
             date: "2024-01-03".to_string(),
         };
         let expense2 = Expense {
             id: 4,
             description: Some("Bagel".to_string()),
             amount: 5.0,
-            payer_id: user.id,
-            participants_ids: vec![user.id],
+            payer_id: user.id.unwrap(),
+            participants_ids: vec![user.id.unwrap()],
             date: "2024-01-04".to_string(),
         };
         group.add_expense(expense1);
@@ -315,8 +317,8 @@ mod tests {
             "Location".to_string(),
         );
         let user = sample_user(7, "Grace");
-        group.add_members(user.id);
-        group.add_members(user.id);
+        group.add_members(user.id.unwrap());
+        group.add_members(user.id.unwrap());
         assert_eq!(group.members_ids.len(), 2);
     }
 
@@ -336,7 +338,7 @@ mod tests {
             id: 5,
             description: Some("Solo".to_string()),
             amount: 50.0,
-            payer_id: user.id,
+            payer_id: user.id.unwrap(),
             participants_ids: vec![],
             date: "2024-01-05".to_string(),
         };

@@ -54,3 +54,9 @@ CREATE TABLE transactions (
   FOREIGN KEY (payer_id) REFERENCES users(id),
   FOREIGN KEY (receiver_id) REFERENCES users(id)
 );
+
+CREATE TABLE api_tokens (
+  token TEXT PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);

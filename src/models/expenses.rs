@@ -26,12 +26,14 @@ mod tests {
 
     #[test]
     fn test_transaction_creation() {
-        let payer = User::new(1, "Alice", "alice@example.com", "pass");
-        let receiver = User::new(2, "Bob", "bob@example.com", "pass");
+        let mut payer = User::new("Alice", "alice@example.com", "pass");
+        payer.id = Some(1);
+        let mut receiver = User::new("Bob", "bob@example.com", "pass");
+        receiver.id = Some(2);
         let tx = Transaction {
             id: 1,
-            payer_id: payer.id,
-            receiver_id: receiver.id,
+            payer_id: payer.id.unwrap(),
+            receiver_id: receiver.id.unwrap(),
             amount: 50.0,
             date: "2024-01-01".to_string(),
         };
@@ -44,13 +46,14 @@ mod tests {
 
     #[test]
     fn test_expense_creation() {
-        let payer = User::new(3, "Carol", "carol@example.com", "pass");
-        let participants = vec![payer.id];
+        let mut payer = User::new("Carol", "carol@example.com", "pass");
+        payer.id = Some(3);
+        let participants = vec![payer.id.unwrap()];
         let expense = Expense {
             id: 2,
             description: Some("Lunch".to_string()),
             amount: 20.0,
-            payer_id: payer.id,
+            payer_id: payer.id.unwrap(),
             participants_ids: participants.clone(),
             date: "2024-01-02".to_string(),
         };
