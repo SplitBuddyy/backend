@@ -2,9 +2,9 @@ use std::time::Duration;
 
 use sqlx::{sqlite::SqlitePoolOptions, Pool, Sqlite};
 
+pub mod expense;
 pub mod group;
 pub mod user;
-pub mod expense;
 #[derive(Clone)]
 pub struct Database {
     pub pool: Pool<Sqlite>,

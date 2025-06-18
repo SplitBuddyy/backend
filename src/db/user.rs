@@ -37,10 +37,7 @@ impl Database {
 
     pub async fn get_user_id_by_token(&self, token: &str) -> Result<u32, sqlx::Error> {
         let query = "SELECT * FROM api_tokens WHERE token = ?";
-        let row = sqlx::query(query)
-            .bind(token)
-            .fetch_one(&self.pool)
-            .await?;
+        let row = sqlx::query(query).bind(token).fetch_one(&self.pool).await?;
         let user_id = row.get("user_id");
         Ok(user_id)
     }

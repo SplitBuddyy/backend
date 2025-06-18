@@ -28,5 +28,4 @@ pub async fn login(State(app_state): State<AppState>, Json(user): Json<User>) ->
     } else {
         return Response::new("Invalid credentials".to_string());
     }
-
 }

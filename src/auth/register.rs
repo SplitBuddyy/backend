@@ -16,13 +16,12 @@ pub async fn register(
     State(app_state): State<AppState>,
     Json(user): Json<User>,
 ) -> Response<String> {
-
     let mut hasher = Sha256::new();
     hasher.update(user.name.as_bytes());
     hasher.update(user.password.as_bytes());
     let result = hasher.finalize();
     let token = general_purpose::STANDARD.encode(result);
-    
+
     match app_state.db.create_user(&user, &token).await {
         Ok(_) => (),
         Err(e) => return Response::new(e.to_string()),

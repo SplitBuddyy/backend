@@ -9,7 +9,7 @@ pub struct Transaction {
     pub amount: f64,
     pub date: String,
 }
-#[derive(Debug,Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct Expense {
     pub id: Option<u32>,
     pub description: String,

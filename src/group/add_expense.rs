@@ -28,12 +28,15 @@ pub async fn add_expense(
     };
     match app_state.db.create_expense(&payload.expense).await {
         Ok(expense_id) => {
-            match app_state.db.add_participant_to_expense(expense_id, payload.expense.payer_id).await {
+            match app_state
+                .db
+                .add_participant_to_expense(expense_id, payload.expense.payer_id)
+                .await
+            {
                 Ok(_) => Ok(Json(true)),
                 Err(e) => Err((StatusCode::BAD_REQUEST, e.to_string())),
             }
         }
         Err(e) => Err((StatusCode::BAD_REQUEST, e.to_string())),
     }
-
 }

@@ -168,12 +168,15 @@ mod tests {
         let group_id = db.create_group(&group).await.unwrap();
 
         db.add_user_to_group(group_id, user_id).await.unwrap();
-        assert!(db.add_user_to_group(group_id, user_id).await.is_err(),"Adding user to group should fail if user is already in group");
+        assert!(
+            db.add_user_to_group(group_id, user_id).await.is_err(),
+            "Adding user to group should fail if user is already in group"
+        );
 
         let members = db.get_group_members(group_id).await.unwrap();
         assert_eq!(members.len(), 1);
         assert_eq!(members[0], user_id);
-    
+
         let group_id = db.create_group(&group).await.unwrap();
         db.add_user_to_group(group_id, user_id).await.unwrap();
 

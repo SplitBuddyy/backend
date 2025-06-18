@@ -16,41 +16,57 @@ impl Database {
         Ok(id)
     }
 
-    pub async fn get_expenses_by_group_id(&self, group_id: u32) -> Result<Vec<Expense>, sqlx::Error> {
+    pub async fn get_expenses_by_group_id(
+        &self,
+        group_id: u32,
+    ) -> Result<Vec<Expense>, sqlx::Error> {
         let query = "SELECT * FROM expenses WHERE group_id = ?";
         let rows = sqlx::query(query)
             .bind(group_id)
             .fetch_all(&self.pool)
             .await?;
-        let expenses = rows.into_iter().map(|row| Expense {
-            id: Some(row.get("id")),
-            description: row.get("description"),
-            amount: row.get("amount"),
-            payer_id: row.get("payer_id"),
-            group_id: row.get("group_id"),
-            date: row.get("date"),
-        }).collect();
+        let expenses = rows
+            .into_iter()
+            .map(|row| Expense {
+                id: Some(row.get("id")),
+                description: row.get("description"),
+                amount: row.get("amount"),
+                payer_id: row.get("payer_id"),
+                group_id: row.get("group_id"),
+                date: row.get("date"),
+            })
+            .collect();
         Ok(expenses)
     }
 
-    pub async fn get_expenses_by_payer_id(&self, payer_id: u32) -> Result<Vec<Expense>, sqlx::Error> {
+    pub async fn get_expenses_by_payer_id(
+        &self,
+        payer_id: u32,
+    ) -> Result<Vec<Expense>, sqlx::Error> {
         let query = "SELECT * FROM expenses WHERE payer_id = ?";
         let rows = sqlx::query(query)
             .bind(payer_id)
             .fetch_all(&self.pool)
             .await?;
-        let expenses = rows.into_iter().map(|row| Expense {
-            id: Some(row.get("id")),
-            description: row.get("description"),
-            amount: row.get("amount"),
-            payer_id: row.get("payer_id"),
-            group_id: row.get("group_id"),
-            date: row.get("date"),
-        }).collect();
+        let expenses = rows
+            .into_iter()
+            .map(|row| Expense {
+                id: Some(row.get("id")),
+                description: row.get("description"),
+                amount: row.get("amount"),
+                payer_id: row.get("payer_id"),
+                group_id: row.get("group_id"),
+                date: row.get("date"),
+            })
+            .collect();
         Ok(expenses)
     }
 
-    pub async fn add_participant_to_expense(&self, expense_id: u32, user_id: u32) -> Result<(), sqlx::Error> {
+    pub async fn add_participant_to_expense(
+        &self,
+        expense_id: u32,
+        user_id: u32,
+    ) -> Result<(), sqlx::Error> {
         let query = "INSERT INTO expense_participants (expense_id, user_id) VALUES (?, ?)";
         sqlx::query(query)
             .bind(expense_id)
@@ -70,7 +86,10 @@ impl Database {
         Ok(participants)
     }
 
-    pub async fn get_expenses_id_by_participant_id(&self, user_id: u32) -> Result<Vec<u32>, sqlx::Error> {
+    pub async fn get_expenses_id_by_participant_id(
+        &self,
+        user_id: u32,
+    ) -> Result<Vec<u32>, sqlx::Error> {
         let query = "SELECT expense_id FROM expense_participants WHERE user_id = ?";
         let rows = sqlx::query(query)
             .bind(user_id)
@@ -100,7 +119,10 @@ impl Database {
 
 #[cfg(test)]
 mod tests {
-    use crate::{db::tests::IN_MEMORY_DB, models::{group::Group, user::User}};
+    use crate::{
+        db::tests::IN_MEMORY_DB,
+        models::{group::Group, user::User},
+    };
 
     /// Test for expense will require a group to be created first, which implies that a user is created first
     use super::*;
@@ -139,5 +161,4 @@ mod tests {
         assert_eq!(expenses.len(), 1);
         assert_eq!(expenses[0], expense);
     }
-    
 }

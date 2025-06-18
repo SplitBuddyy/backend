@@ -1,6 +1,6 @@
 use chrono::Utc;
 use reqwest::Client;
-    use serde_json;
+use serde_json;
 use trip_split::models::{group::Group, user::User};
 
 pub struct Sdk {

@@ -4,7 +4,7 @@ use trip_split::models::group::{get_group_summary, Group};
 use trip_split::models::user::User;
 
 fn sample_user(id: u32, name: &str) -> User {
-    let mut user = User::new( name, &format!("{}@example.com", name), "pass");
+    let mut user = User::new(name, &format!("{}@example.com", name), "pass");
     user.id = Some(id);
     user
 }

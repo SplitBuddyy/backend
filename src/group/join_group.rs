@@ -26,7 +26,11 @@ pub async fn join_group(
         Ok(id) => id,
         Err(_) => return Err((StatusCode::UNAUTHORIZED, "Invalid API key".to_string())),
     };
-    match app_state.db.add_user_to_group(payload.group_id, user_id).await {
+    match app_state
+        .db
+        .add_user_to_group(payload.group_id, user_id)
+        .await
+    {
         Ok(_) => Ok(Json(true)),
         Err(e) => Err((StatusCode::BAD_REQUEST, e.to_string())),
     }
