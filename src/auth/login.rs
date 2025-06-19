@@ -16,7 +16,7 @@ use crate::{models::user::User, server::AppState};
 pub async fn login(State(app_state): State<AppState>, Json(user): Json<User>) -> Response<String> {
     // Generate token the same way as in register
     let mut hasher = Sha256::new();
-    hasher.update(user.name.as_bytes());
+    hasher.update(user.email.as_bytes());
     hasher.update(user.password.as_bytes());
     let result = hasher.finalize();
     let token = general_purpose::STANDARD.encode(result);

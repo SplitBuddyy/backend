@@ -17,7 +17,7 @@ pub async fn register(
     Json(user): Json<User>,
 ) -> Response<String> {
     let mut hasher = Sha256::new();
-    hasher.update(user.name.as_bytes());
+    hasher.update(user.email.as_bytes());
     hasher.update(user.password.as_bytes());
     let result = hasher.finalize();
     let token = general_purpose::STANDARD.encode(result);
