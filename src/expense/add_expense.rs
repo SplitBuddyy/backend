@@ -5,7 +5,8 @@ use axum::{
 };
 
 use crate::{
-    auth::utils::extract_user_id_from_headers, models::group::ExpenseAddRequest, server::AppState,
+    auth::utils::extract_user_id_from_headers, models::expenses::ExpenseAddRequest,
+    server::AppState,
 };
 
 #[utoipa::path(
@@ -30,7 +31,7 @@ pub async fn add_expense(
         Ok(expense_id) => {
             match app_state
                 .db
-                .add_participant_to_expense(expense_id, payload.expense.payer_id)
+                .add_participants_to_expense(expense_id, payload.participants_ids)
                 .await
             {
                 Ok(_) => Ok(Json(true)),

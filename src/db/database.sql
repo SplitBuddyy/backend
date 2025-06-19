@@ -51,6 +51,7 @@ CREATE TABLE transactions (
   receiver_id INTEGER NOT NULL,
   amount REAL NOT NULL,
   date TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('pending', 'completed')),
   FOREIGN KEY (payer_id) REFERENCES users(id),
   FOREIGN KEY (receiver_id) REFERENCES users(id)
 );

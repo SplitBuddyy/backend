@@ -98,19 +98,23 @@ mod tests {
 
     use super::*;
 
-    #[tokio::test]
-    async fn test_create_group() {
+    async fn setup_test_env() -> (Database, u32) {
         let db = Database::new(IN_MEMORY_DB).await.unwrap();
         db.init().await.unwrap();
         let user = User::new("Test User", "test@example.com", "password");
+        let user_id = db.create_user(&user, "token").await.unwrap();
+        (db, user_id)
+    }
 
-        db.create_user(&user, "token").await.unwrap();
+    #[tokio::test]
+    async fn test_create_group() {
+        let (db, user_id) = setup_test_env().await;
 
         let time = Utc::now();
         let group = Group {
             id: None,
             name: "Test Group".to_string(),
-            owner_id: 1,
+            owner_id: user_id,
             group_start_date: time,
             group_end_date: time,
             description: "Test Description".to_string(),
@@ -150,16 +154,13 @@ mod tests {
 
     #[tokio::test]
     async fn test_add_user_to_group() {
-        let db = Database::new(IN_MEMORY_DB).await.unwrap();
-        db.init().await.unwrap();
-        let user = User::new("Test User", "test@example.com", "password");
-        let user_id = db.create_user(&user, "token").await.unwrap();
+        let (db, user_id) = setup_test_env().await;
 
         let time = Utc::now();
         let group = Group {
             id: None,
             name: "Test Group".to_string(),
-            owner_id: 1,
+            owner_id: user_id,
             group_start_date: time,
             group_end_date: time,
             description: "Test Description".to_string(),
@@ -183,5 +184,74 @@ mod tests {
         let groups = db.get_user_groups(user_id).await.unwrap();
         assert_eq!(groups.len(), 2);
         assert!(groups.contains(&group_id));
+    }
+
+    #[tokio::test]
+    async fn test_get_nonexistent_group() {
+        let (db, _) = setup_test_env().await;
+
+        // Try to get non-existent group
+        let result = db.get_group(999).await;
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_add_user_to_nonexistent_group() {
+        let (db, user_id) = setup_test_env().await;
+
+        // Try to add user to non-existent group
+        let result = db.add_user_to_group(999, user_id).await;
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_get_members_nonexistent_group() {
+        let (db, _) = setup_test_env().await;
+
+        // Try to get members of non-existent group
+        let result = db.get_group_members(999).await;
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().len(), 0);
+    }
+
+    #[tokio::test]
+    async fn test_multiple_users_in_group() {
+        let (db, owner_id) = setup_test_env().await;
+
+        // Create additional users
+        let user1 = User::new("User 1", "user1@example.com", "pass1");
+        let user2 = User::new("User 2", "user2@example.com", "pass2");
+        let user1_id = db.create_user(&user1, "token1").await.unwrap();
+        let user2_id = db.create_user(&user2, "token2").await.unwrap();
+
+        // Create group
+        let group = Group {
+            id: None,
+            name: "Multi-User Group".to_string(),
+            owner_id,
+            group_start_date: Utc::now(),
+            group_end_date: Utc::now(),
+            description: "Test Group".to_string(),
+            location: "Test Location".to_string(),
+        };
+        let group_id = db.create_group(&group).await.unwrap();
+
+        // Add multiple users
+        db.add_user_to_group(group_id, user1_id).await.unwrap();
+        db.add_user_to_group(group_id, user2_id).await.unwrap();
+
+        // Verify group members
+        let members = db.get_group_members(group_id).await.unwrap();
+        assert_eq!(members.len(), 2);
+        assert!(members.contains(&user1_id));
+        assert!(members.contains(&user2_id));
+
+        // Verify each user's groups
+        let user1_groups = db.get_user_groups(user1_id).await.unwrap();
+        let user2_groups = db.get_user_groups(user2_id).await.unwrap();
+        assert_eq!(user1_groups.len(), 1);
+        assert_eq!(user2_groups.len(), 1);
+        assert_eq!(user1_groups[0], group_id);
+        assert_eq!(user2_groups[0], group_id);
     }
 }

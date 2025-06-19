@@ -4,6 +4,7 @@ use sqlx::{sqlite::SqlitePoolOptions, Pool, Sqlite};
 
 pub mod expense;
 pub mod group;
+pub mod transaction;
 pub mod user;
 #[derive(Clone)]
 pub struct Database {

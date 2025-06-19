@@ -1,17 +1,9 @@
 use crate::server::AppState;
 use axum::{routing::post, Router};
 
-mod add_expense;
-use add_expense::__path_add_expense;
-use add_expense::add_expense;
-
 mod join_group;
 use join_group::__path_join_group;
 use join_group::join_group;
-
-// mod calculate_expense;
-// use calculate_expense::__path_calculate_expense;
-// use calculate_expense::calculate_expense;
 
 mod create_group;
 use create_group::__path_create_group;
@@ -32,8 +24,6 @@ use utoipa::OpenApi;
     create_group,
     join_group,
     get_user_joined_groups,
-    // calculate_expense,
-    add_expense
 ))]
 pub struct GroupApi;
 
@@ -43,7 +33,5 @@ pub fn router(app_state: AppState) -> Router {
         .route("/get_user_owned_groups", post(get_user_owned_groups))
         .route("/get_user_joined_groups", post(get_user_joined_groups))
         .route("/join_group", post(join_group))
-        .route("/add_expense", post(add_expense))
-        // .route("/calculate", post(calculate_expense))
         .with_state(app_state)
 }

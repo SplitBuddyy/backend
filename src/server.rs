@@ -1,25 +1,16 @@
-use std::collections::HashMap;
 use std::net::SocketAddr;
-use std::sync::Arc;
 
 use axum::{routing::get, Router};
-use tokio::fs;
 use tower_http::cors::CorsLayer;
 
+use crate::{auth, db::Database, expense, group};
 use axum::serve;
 use tokio::net::TcpListener;
-use tokio::sync::Mutex;
-use utoipa::openapi::Info;
-use utoipa_swagger_ui::SwaggerUi;
-
-use crate::auth;
-use crate::db::Database;
-use crate::group;
-use crate::models::group::Group;
-use crate::models::user::User;
 use utoipa::openapi::security::{ApiKey, ApiKeyValue, SecurityScheme};
+use utoipa::openapi::Info;
 use utoipa::Modify;
 use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -30,6 +21,7 @@ pub struct AppState {
     nest(
         (path = "/group", api = group::GroupApi),
         (path = "/auth", api = auth::AuthApi),
+        (path = "/expense", api = expense::ExpenseApi),
     ),
     paths(
         ok_handler
@@ -64,6 +56,7 @@ pub async fn app() -> Router {
         .merge(SwaggerUi::new("/swagger-ui").url("/api/openapi.json", doc))
         .nest("/group", group::router(app_state.clone()))
         .nest("/auth", auth::router(app_state.clone()))
+        .nest("/expense", expense::router(app_state.clone()))
         .route("/ok", get(ok_handler))
         .fallback(ok_handler)
         .layer(cors)
