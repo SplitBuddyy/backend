@@ -3,7 +3,7 @@ use std::net::SocketAddr;
 use axum::{routing::get, Router};
 use tower_http::cors::CorsLayer;
 
-use crate::{auth, db::Database, expense, group};
+use crate::{auth, db::Database, expense, group, summary};
 use axum::serve;
 use tokio::net::TcpListener;
 use utoipa::openapi::security::{ApiKey, ApiKeyValue, SecurityScheme};
@@ -22,6 +22,7 @@ pub struct AppState {
         (path = "/group", api = group::GroupApi),
         (path = "/auth", api = auth::AuthApi),
         (path = "/expense", api = expense::ExpenseApi),
+        (path = "/summary", api = summary::SummaryApi),
     ),
     paths(
         ok_handler
@@ -57,6 +58,7 @@ pub async fn app() -> Router {
         .nest("/group", group::router(app_state.clone()))
         .nest("/auth", auth::router(app_state.clone()))
         .nest("/expense", expense::router(app_state.clone()))
+        .nest("/summary", summary::router(app_state.clone()))
         .route("/ok", get(ok_handler))
         .fallback(ok_handler)
         .layer(cors)
