@@ -52,8 +52,12 @@ CREATE TABLE transactions (
   amount REAL NOT NULL,
   date TEXT NOT NULL,
   status TEXT NOT NULL CHECK (status IN ('pending', 'completed')),
+  group_id INTEGER NOT NULL,
   FOREIGN KEY (payer_id) REFERENCES users(id),
-  FOREIGN KEY (receiver_id) REFERENCES users(id)
+  FOREIGN KEY (receiver_id) REFERENCES users(id),
+  FOREIGN KEY (group_id) REFERENCES groups(id),
+  FOREIGN KEY (group_id, payer_id) REFERENCES group_members(group_id, user_id),
+  FOREIGN KEY (group_id, receiver_id) REFERENCES group_members(group_id, user_id)
 );
 
 CREATE TABLE api_tokens (

@@ -7,13 +7,14 @@ use crate::{
 
 impl Database {
     pub async fn create_transaction(&self, transaction: &Transaction) -> Result<u32, sqlx::Error> {
-        let query = "INSERT INTO transactions (payer_id, receiver_id, amount, date, status) VALUES (?, ?, ?, ?, ?) RETURNING id";
+        let query = "INSERT INTO transactions (payer_id, receiver_id, amount, date, status, group_id) VALUES (?, ?, ?, ?, ?, ?) RETURNING id";
         let row = sqlx::query(query)
             .bind(transaction.payer_id)
             .bind(transaction.receiver_id)
             .bind(transaction.amount)
             .bind(transaction.date.clone())
             .bind(transaction.status.to_string())
+            .bind(transaction.group_id)
             .fetch_one(&self.pool)
             .await?;
         let id = row.get("id");
@@ -30,9 +31,11 @@ impl Database {
             amount: row.get("amount"),
             date: row.get("date"),
             status: Status::from_string(row.get("status")),
+            group_id: row.get("group_id"),
         };
         Ok(transaction)
     }
+
     pub async fn get_transactions_by_payer_id(
         &self,
         payer_id: u32,
@@ -51,16 +54,29 @@ impl Database {
                 amount: row.get("amount"),
                 date: row.get("date"),
                 status: Status::from_string(row.get("status")),
+                group_id: row.get("group_id"),
             })
             .collect();
         Ok(transactions)
+    }
+
+    pub async fn delete_transactions_by_group_id(&self, group_id: u32) -> Result<(), sqlx::Error> {
+        let query = "DELETE FROM transactions WHERE group_id = ?";
+        sqlx::query(query)
+            .bind(group_id)
+            .execute(&self.pool)
+            .await?;
+        Ok(())
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{db::tests::IN_MEMORY_DB, models::user::User};
+    use crate::{
+        db::tests::IN_MEMORY_DB,
+        models::{group::Group, user::User},
+    };
     use chrono::Utc;
 
     #[tokio::test]
@@ -75,6 +91,19 @@ mod tests {
         let payer_id = db.create_user(&user1, "token1").await.unwrap();
         let receiver_id = db.create_user(&user2, "token2").await.unwrap();
 
+        let group = Group::new(
+            "group1",
+            1,
+            Utc::now(),
+            Utc::now(),
+            "Group1".to_string(),
+            "ads".to_string(),
+        );
+        let group_id = db.create_group(&group).await.unwrap();
+
+        db.add_user_to_group(group_id, payer_id).await.unwrap();
+        db.add_user_to_group(group_id, receiver_id).await.unwrap();
+
         let time = Utc::now().to_string();
         let transaction = Transaction {
             id: None,
@@ -83,6 +112,7 @@ mod tests {
             amount: 100.0,
             date: time.clone(),
             status: Status::Pending,
+            group_id: 1,
         };
 
         // Test creating transaction
@@ -107,10 +137,23 @@ mod tests {
         let payer = User::new("Payer", "payer@example.com", "password");
         let receiver1 = User::new("Receiver1", "receiver1@example.com", "password");
         let receiver2 = User::new("Receiver2", "receiver2@example.com", "password");
-
+        let group = Group::new(
+            "group1",
+            1,
+            Utc::now(),
+            Utc::now(),
+            "Group1".to_string(),
+            "ads".to_string(),
+        );
         let payer_id = db.create_user(&payer, "token_payer").await.unwrap();
         let receiver1_id = db.create_user(&receiver1, "token_receiver1").await.unwrap();
         let receiver2_id = db.create_user(&receiver2, "token_receiver2").await.unwrap();
+
+        let group_id = db.create_group(&group).await.unwrap();
+
+        db.add_user_to_group(group_id, payer_id).await.unwrap();
+        db.add_user_to_group(group_id, receiver1_id).await.unwrap();
+        db.add_user_to_group(group_id, receiver2_id).await.unwrap();
 
         let time = Utc::now().to_string();
 
@@ -122,6 +165,7 @@ mod tests {
             amount: 50.0,
             date: time.clone(),
             status: Status::Pending,
+            group_id: 1,
         };
 
         let transaction2 = Transaction {
@@ -131,6 +175,7 @@ mod tests {
             amount: 75.0,
             date: time.clone(),
             status: Status::Completed,
+            group_id: 1,
         };
 
         // Create transactions

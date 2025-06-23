@@ -1,6 +1,5 @@
 use chrono::Utc;
 use reqwest::Client;
-use serde_json;
 use trip_split::models::{
     expenses::{Expense, Status, Transaction},
     group::Group,
@@ -75,14 +74,14 @@ impl Sdk {
     pub async fn get_groups(&self, owner: u32, api_token: &str) -> reqwest::Result<Vec<Group>> {
         let resp = self
             .client
-            .get(&format!("{}/group/get_user_groups", self.base_url))
+            .post(&format!("{}/group/get_user_owned_groups", self.base_url))
             .header("todo_apikey", api_token)
             .send()
             .await?;
         resp.json::<Vec<Group>>().await
     }
 
-    pub async fn add_users_to_group(
+    pub async fn _add_users_to_group(
         &self,
         group_id: u32,
         user_ids: Vec<u32>,
@@ -99,7 +98,7 @@ impl Sdk {
         Ok(())
     }
 
-    pub async fn get_group_members(
+    pub async fn _get_group_members(
         &self,
         group_id: u32,
         api_token: &str,
@@ -114,7 +113,7 @@ impl Sdk {
     }
 
     // Expense endpoints
-    pub async fn create_expense(
+    pub async fn _create_expense(
         &self,
         description: &str,
         amount: f64,
@@ -142,7 +141,7 @@ impl Sdk {
         resp.text().await
     }
 
-    pub async fn get_group_expenses(
+    pub async fn _get_group_expenses(
         &self,
         group_id: u32,
         api_token: &str,
@@ -156,7 +155,7 @@ impl Sdk {
         resp.json::<Vec<Expense>>().await
     }
 
-    pub async fn get_user_expenses(&self, api_token: &str) -> reqwest::Result<Vec<Expense>> {
+    pub async fn _get_user_expenses(&self, api_token: &str) -> reqwest::Result<Vec<Expense>> {
         let resp = self
             .client
             .get(&format!("{}/expense/user", self.base_url))
@@ -167,12 +166,13 @@ impl Sdk {
     }
 
     // Transaction endpoints
-    pub async fn create_transaction(
+    pub async fn _create_transaction(
         &self,
         payer_id: u32,
         receiver_id: u32,
         amount: f64,
         api_token: &str,
+        group_id: u32,
     ) -> reqwest::Result<String> {
         let transaction = Transaction {
             id: None,
@@ -181,6 +181,7 @@ impl Sdk {
             amount,
             date: Utc::now().to_string(),
             status: Status::Pending,
+            group_id,
         };
 
         let resp = self
@@ -193,7 +194,7 @@ impl Sdk {
         resp.text().await
     }
 
-    pub async fn get_transaction(
+    pub async fn _get_transaction(
         &self,
         transaction_id: u32,
         api_token: &str,
@@ -207,7 +208,7 @@ impl Sdk {
         resp.json::<Transaction>().await
     }
 
-    pub async fn get_payer_transactions(
+    pub async fn _get_payer_transactions(
         &self,
         api_token: &str,
     ) -> reqwest::Result<Vec<Transaction>> {

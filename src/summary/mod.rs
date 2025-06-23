@@ -1,9 +1,8 @@
 use axum::{
-    Router,
-    routing::get,
     extract::{Path, State},
-    Json,
     response::Response,
+    routing::get,
+    Router,
 };
 use utoipa::OpenApi;
 
@@ -11,20 +10,12 @@ use crate::server::AppState;
 
 mod get_summary;
 
-pub use get_summary::{
-    GroupSummary,
-    Transaction,
-    UserBalance,
-};
+pub use get_summary::{GroupSummary, Transaction, UserBalance};
 
 #[derive(OpenApi)]
 #[openapi(
-    paths(
-        get_group_summary
-    ),
-    components(
-        schemas(GroupSummary, Transaction, UserBalance)
-    )
+    paths(get_group_summary),
+    components(schemas(GroupSummary, Transaction, UserBalance))
 )]
 pub struct SummaryApi;
 

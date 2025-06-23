@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -20,6 +22,7 @@ pub struct Transaction {
     pub amount: f64,
     pub date: String,
     pub status: Status,
+    pub group_id: u32,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
@@ -27,13 +30,17 @@ pub enum Status {
     Pending,
     Completed,
 }
-impl Status {
-    pub fn to_string(&self) -> String {
+
+impl Display for Status {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Status::Pending => "pending".to_string(),
-            Status::Completed => "completed".to_string(),
+            Status::Pending => write!(f, "pending"),
+            Status::Completed => write!(f, "completed"),
         }
     }
+}
+
+impl Status {
     pub fn from_string(status: String) -> Self {
         match status.as_str() {
             "pending" => Status::Pending,

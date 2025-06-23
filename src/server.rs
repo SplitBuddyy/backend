@@ -43,7 +43,7 @@ impl Modify for SecurityAddon {
     }
 }
 pub async fn app() -> Router {
-    let db_path = "trip_split.db";
+    let db_path = ":memory:";
 
     let db = Database::new(db_path).await.unwrap();
     db.init().await.unwrap();

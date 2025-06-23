@@ -24,8 +24,8 @@ pub async fn login(State(app_state): State<AppState>, Json(user): Json<User>) ->
     let user_id = app_state.db.get_user_id_by_token(&token).await;
     // Check if token exists in api_tokens
     if user_id.is_ok() {
-        return Response::new(token);
+        Response::new(token)
     } else {
-        return Response::new("Invalid credentials".to_string());
+        Response::new("Invalid credentials".to_string())
     }
 }
