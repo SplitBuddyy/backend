@@ -54,7 +54,7 @@ pub async fn app() -> Router {
         let db = Database::new(db_path).await.unwrap();
         db.init().await.unwrap();
         db
-    }else{
+    } else {
         Database::new(db_path).await.unwrap()
     };
 
@@ -62,7 +62,13 @@ pub async fn app() -> Router {
 
     let cors = CorsLayer::permissive();
     let mut doc = ApiDoc::openapi();
-    doc.info = Info::builder().title("Trip Split").version("0.1.0").description(Some("Trip Split API that allows you to split expenses with your friends.")).build();
+    doc.info = Info::builder()
+        .title("Trip Split")
+        .version("0.1.0")
+        .description(Some(
+            "Trip Split API that allows you to split expenses with your friends.",
+        ))
+        .build();
 
     Router::new()
         .merge(SwaggerUi::new("/swagger-ui").url("/api/openapi.json", doc))
