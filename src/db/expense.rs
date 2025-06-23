@@ -177,7 +177,7 @@ mod tests {
     async fn test_create_and_get_expense() {
         let (db, user_id, group_id) = setup_test_env().await;
         let time = Utc::now().to_string();
-
+        db.add_user_to_group(group_id, user_id).await.unwrap();
         let expense = Expense {
             id: None,
             description: "Test Expense".to_string(),
@@ -209,6 +209,9 @@ mod tests {
         let participant2 = User::new("Participant 2", "p2@example.com", "pass2");
         let p1_id = db.create_user(&participant1, "token1").await.unwrap();
         let p2_id = db.create_user(&participant2, "token2").await.unwrap();
+        db.add_user_to_group(group_id, p1_id).await.unwrap();
+        db.add_user_to_group(group_id, p2_id).await.unwrap();
+        db.add_user_to_group(group_id, user_id).await.unwrap();
 
         // Create test expense
         let expense = Expense {
@@ -241,6 +244,8 @@ mod tests {
     #[tokio::test]
     async fn test_get_expenses_by_group() {
         let (db, user_id, group_id) = setup_test_env().await;
+
+        db.add_user_to_group(group_id, user_id).await.unwrap();
 
         // Create multiple expenses in the same group
         let expense1 = Expense {
@@ -277,7 +282,8 @@ mod tests {
         // Create another user as payer
         let other_payer = User::new("Other Payer", "other@example.com", "pass");
         let other_id = db.create_user(&other_payer, "token_other").await.unwrap();
-
+        db.add_user_to_group(group_id, other_id).await.unwrap();
+        db.add_user_to_group(group_id, user_id).await.unwrap();
         // Create expenses with different payers
         let expense1 = Expense {
             id: None,

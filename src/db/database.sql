@@ -34,6 +34,7 @@ CREATE TABLE expenses (
   group_id INTEGER NOT NULL,
   date TEXT NOT NULL,
   FOREIGN KEY (payer_id) REFERENCES users(id),
+  FOREIGN KEY (group_id, payer_id) REFERENCES group_members(group_id, user_id),
   FOREIGN KEY (group_id) REFERENCES groups(id)
 );
 
