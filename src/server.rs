@@ -1,4 +1,6 @@
+use std::fs;
 use std::net::SocketAddr;
+use std::path::Path;
 
 use axum::{routing::get, Router};
 use tower_http::cors::CorsLayer;
@@ -43,15 +45,24 @@ impl Modify for SecurityAddon {
     }
 }
 pub async fn app() -> Router {
-    let db_path = ":memory:";
+    let db_path = "sqlite.db";
 
-    let db = Database::new(db_path).await.unwrap();
-    db.init().await.unwrap();
+    let db_exists = Path::new(db_path).exists();
+
+    let db = if !db_exists {
+        fs::write(db_path, "").unwrap();
+        let db = Database::new(db_path).await.unwrap();
+        db.init().await.unwrap();
+        db
+    }else{
+        Database::new(db_path).await.unwrap()
+    };
+
     let app_state = AppState { db };
 
     let cors = CorsLayer::permissive();
     let mut doc = ApiDoc::openapi();
-    doc.info = Info::builder().title("Trip Split").version("0.1.0").build();
+    doc.info = Info::builder().title("Trip Split").version("0.1.0").description(Some("Trip Split API that allows you to split expenses with your friends.")).build();
 
     Router::new()
         .merge(SwaggerUi::new("/swagger-ui").url("/api/openapi.json", doc))
