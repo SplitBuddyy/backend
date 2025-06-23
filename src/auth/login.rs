@@ -14,25 +14,18 @@ use crate::{models::user::User, server::AppState};
     )
 )]
 pub async fn login(State(app_state): State<AppState>, Json(user): Json<User>) -> Response<String> {
-    // Find user by name and password
-    let users = app_state.users.lock().await;
-    let found_user = users
-        .iter()
-        .find(|u| u.name == user.name && u.password == user.password);
-    if let Some(u) = found_user {
-        // Generate token the same way as in register
-        let mut hasher = Sha256::new();
-        hasher.update(u.name.as_bytes());
-        hasher.update(u.password.as_bytes());
-        let result = hasher.finalize();
-        let token = general_purpose::STANDARD.encode(result);
-        // Check if token exists in api_tokens
-        let api_tokens = app_state.api_tokens.lock().await;
-        if api_tokens.get(&token).is_some() {
-            return Response::new(token);
-        } else {
-            return Response::new("Token not found. Please register again.".to_string());
-        }
+    // Generate token the same way as in register
+    let mut hasher = Sha256::new();
+    hasher.update(user.email.as_bytes());
+    hasher.update(user.password.as_bytes());
+    let result = hasher.finalize();
+    let token = general_purpose::STANDARD.encode(result);
+
+    let user_id = app_state.db.get_user_id_by_token(&token).await;
+    // Check if token exists in api_tokens
+    if user_id.is_ok() {
+        Response::new(token)
+    } else {
+        Response::new("Invalid credentials".to_string())
     }
-    Response::new("User not found".to_string())
 }

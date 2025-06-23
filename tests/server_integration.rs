@@ -1,5 +1,6 @@
 mod sdk;
 use axum::serve;
+use chrono::Utc;
 use portpicker::pick_unused_port;
 use sdk::Sdk;
 use tokio::net::TcpListener;
@@ -11,7 +12,7 @@ async fn spawn_server_on_random_port() -> u16 {
     let listener = TcpListener::bind(&addr).await.expect("bind");
     let app = server::app();
     tokio::spawn(async move {
-        serve(listener, app).await.unwrap();
+        serve(listener, app.await).await.unwrap();
     });
     // Optionally, poll until server is ready
     port
@@ -41,16 +42,26 @@ async fn test_create_and_get_group() {
         .create_user("IntegrationTestUser", "integration@test.com", "password123")
         .await
         .expect("create user");
-    assert!(api_token.contains("p4IcTeRlfeOLA4rqeM8nWSWI0xfJpgtkwIJetmcUC/k="));
+    println!("API token: {}", api_token);
+    assert!(api_token.contains("xjX3pNg9FOkRQMsVX+UjgRir5atax3WhD0tERHPMzQA="));
 
     // Create a group
     let resp = sdk
-        .create_group("IntegrationTestGroup", 0, &api_token)
+        .create_group(
+            "IntegrationTestGroup",
+            "IntegrationTestDescription",
+            "IntegrationTestLocation",
+            0,
+            Utc::now(),
+            Utc::now(),
+            &api_token,
+        )
         .await
         .expect("create group");
     println!("Group created: {}", resp);
 
     assert!(resp.contains("Group created succesfully"));
+
     // Fetch all groups for owner 42
     let groups = sdk.get_groups(0, &api_token).await.expect("get groups");
     let group = groups
@@ -58,5 +69,5 @@ async fn test_create_and_get_group() {
         .find(|g| g.name == "IntegrationTestGroup")
         .expect("group found");
     assert_eq!(group.name, "IntegrationTestGroup");
-    assert_eq!(group.owner_id, 0);
+    assert_eq!(group.owner_id, 1);
 }

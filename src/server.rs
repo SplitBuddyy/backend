@@ -1,35 +1,30 @@
-use std::collections::HashMap;
+use std::fs;
 use std::net::SocketAddr;
-use std::sync::Arc;
+use std::path::Path;
 
 use axum::{routing::get, Router};
 use tower_http::cors::CorsLayer;
 
+use crate::{auth, db::Database, expense, group, summary};
 use axum::serve;
 use tokio::net::TcpListener;
-use tokio::sync::Mutex;
-use utoipa::openapi::Info;
-use utoipa_swagger_ui::SwaggerUi;
-
-use crate::auth;
-use crate::group;
-use crate::models::group::Group;
-use crate::models::user::User;
 use utoipa::openapi::security::{ApiKey, ApiKeyValue, SecurityScheme};
+use utoipa::openapi::Info;
 use utoipa::Modify;
 use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
 
 #[derive(Clone)]
 pub struct AppState {
-    pub users: Arc<Mutex<Vec<User>>>,
-    pub groups: Arc<Mutex<Vec<Group>>>,
-    pub api_tokens: Arc<Mutex<HashMap<String, u32>>>,
+    pub db: Database,
 }
 #[derive(OpenApi)]
 #[openapi(
     nest(
         (path = "/group", api = group::GroupApi),
         (path = "/auth", api = auth::AuthApi),
+        (path = "/expense", api = expense::ExpenseApi),
+        (path = "/summary", api = summary::SummaryApi),
     ),
     paths(
         ok_handler
@@ -49,21 +44,38 @@ impl Modify for SecurityAddon {
         }
     }
 }
-pub fn app() -> Router {
-    let app_state = AppState {
-        users: Arc::new(Mutex::new(Vec::new())),
-        groups: Arc::new(Mutex::new(Vec::new())),
-        api_tokens: Arc::new(Mutex::new(HashMap::new())),
+pub async fn app() -> Router {
+    let db_path = "sqlite.db";
+
+    let db_exists = Path::new(db_path).exists();
+
+    let db = if !db_exists {
+        fs::write(db_path, "").unwrap();
+        let db = Database::new(db_path).await.unwrap();
+        db.init().await.unwrap();
+        db
+    } else {
+        Database::new(db_path).await.unwrap()
     };
+
+    let app_state = AppState { db };
 
     let cors = CorsLayer::permissive();
     let mut doc = ApiDoc::openapi();
-    doc.info = Info::builder().title("Trip Split").version("0.1.0").build();
+    doc.info = Info::builder()
+        .title("Trip Split")
+        .version("0.1.0")
+        .description(Some(
+            "Trip Split API that allows you to split expenses with your friends.",
+        ))
+        .build();
 
     Router::new()
         .merge(SwaggerUi::new("/swagger-ui").url("/api/openapi.json", doc))
         .nest("/group", group::router(app_state.clone()))
         .nest("/auth", auth::router(app_state.clone()))
+        .nest("/expense", expense::router(app_state.clone()))
+        .nest("/summary", summary::router(app_state.clone()))
         .route("/ok", get(ok_handler))
         .fallback(ok_handler)
         .layer(cors)
@@ -75,7 +87,7 @@ pub async fn start() {
     println!("Listening on http://{}", addr);
     let listener = TcpListener::bind(addr).await.unwrap();
 
-    serve(listener, app()).await.unwrap();
+    serve(listener, app().await).await.unwrap();
 }
 
 #[utoipa::path(

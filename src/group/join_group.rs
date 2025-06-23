@@ -26,33 +26,12 @@ pub async fn join_group(
         Ok(id) => id,
         Err(_) => return Err((StatusCode::UNAUTHORIZED, "Invalid API key".to_string())),
     };
-    let mut groups = app_state.groups.lock().await;
-    let users = app_state.users.lock().await;
-    let user_exist = users.iter().find(|u| u.id == user_id);
-
-    let user = match user_exist {
-        Some(user) => user.clone(),
-        None => {
-            return Err((
-                StatusCode::NOT_FOUND,
-                "User does not exist in the database".to_string(),
-            ));
-        }
-    };
-
-    if let Some(group) = groups.iter_mut().find(|g| g.id == payload.group_id) {
-        if group.members_ids.contains(&user.id) {
-            return Err((
-                StatusCode::BAD_REQUEST,
-                "User already in the group".to_string(),
-            ));
-        }
-        group.add_members(user.id);
-        Ok(Json(true))
-    } else {
-        Err((
-            StatusCode::NOT_FOUND,
-            "User does not have any group matching those parameters".to_string(),
-        ))
+    match app_state
+        .db
+        .add_user_to_group(payload.group_id, user_id)
+        .await
+    {
+        Ok(_) => Ok(Json(true)),
+        Err(e) => Err((StatusCode::BAD_REQUEST, e.to_string())),
     }
 }
