@@ -42,7 +42,10 @@ pub async fn create_group(
     );
 
     match app_state.db.create_group(&group).await {
-        Ok(id) => Response::new(format!("Group created succesfully: {:?}", id)),
+        Ok(id) => {
+            app_state.db.add_user_to_group(id, user_id).await.unwrap();
+            Response::new(format!("Group created succesfully: {:?}", id))
+        }
         Err(e) => Response::new(e.to_string()),
     }
 }

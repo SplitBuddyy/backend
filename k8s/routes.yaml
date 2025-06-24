@@ -5,8 +5,8 @@ metadata:
 spec:
   parentRefs:
     - kind: Gateway
-      name: nginx
-      namespace: nginx-gateway
+      name: entrypoint
+      namespace: gateway
   hostnames:
     - trip-split.visoft.dev
   rules:

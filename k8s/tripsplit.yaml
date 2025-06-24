@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: trip-split
-        image: docker.io/chudas/tripsplit:v0.2
+        image: docker.io/chudas/tripsplit:v0.5
         ports:
           - containerPort: 3000
 ---
